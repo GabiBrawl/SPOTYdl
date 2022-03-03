@@ -21,9 +21,9 @@ echo 3) flac		 6) wav
 echo 7) help
 echo.
 echo Input the number that corresponds to your choice.
-set /p of=$ 
-if "%of%"=="/help" (set hlp="output-format" && goto help)
-if "%of%"=="7" (set hlp="output-format" && goto help)
+set /p of=^>
+if "%of%"=="/help" (set hlp=output-format && goto help)
+if "%of%"=="7" (set hlp=output-format && goto help)
 if "%of%"=="1" (set format="mp3" && goto set-link)
 if "%of%"=="2" (set format="m4a" && goto set-link)
 if "%of%"=="3" (set format="flac" && goto set-link)
@@ -55,9 +55,9 @@ if "%link%"=="/b" GOTO output-format
 :download
 cls
 spotdl %link% --output-format %format%
-if %errorlevel% == 1 goto success
-if %errorlevel% == 2 goto success
-if %errorlevel% == 0 goto error1
+if %errorlevel% == 0 goto success
+if %errorlevel% == 1 goto error1
+::if %errorlevel% == 2 goto success
 pause
 
 
@@ -66,6 +66,7 @@ cls
 echo Song/Playlist was successfuly downloaded!
 powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Information; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your download is completed!', [System.Windows.Forms.ToolTipIcon]::None)}"
 echo.
+echo Press any key to exit
 pause >nul
 exit
 ::set action="exit"
@@ -76,7 +77,7 @@ exit
 :error1
 cls
 echo The music you tried to download was not found. Try again.
-powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Information; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your download just failed...', [System.Windows.Forms.ToolTipIcon]::None)}"
+powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Error; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your download failed...', [System.Windows.Forms.ToolTipIcon]::None)}"
 timeout /t 5 >nul
 goto set-link
 ::set action="goto set-link"
@@ -90,6 +91,7 @@ goto set-link
 
 
 :help
+cls
 echo Nothing to show here yet.
 echo Press any key to go back.
 pause >nul
