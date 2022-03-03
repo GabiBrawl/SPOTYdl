@@ -1,30 +1,36 @@
-@echo off
-title Cleaning up your system...
-color 07
-mode con: cols=70 lines=15
+set /p confirm=y/n^>
+if %confirm%==y goto c1
+if %confirm%==n goto failure
 
 
-:confirmation
-echo You're going to delete all the setup files.
+:c1
+echo Would you like o delete the python and ffmpeg setups too?
 echo.
 set /p confirm=y/n^>
-if %confirm%==y goto cleanup
-if %confirm%==n goto failure
+if %confirm%==y goto cleanups
+if %confirm%==n goto cleanup
 
 
 :cleanup
 echo Cleaning up your system...
-del "SPOTYdl - SETUP" /y
-del "7z.dll" /y
-del "7z.exe" /y
-del "7-zip.dll" /y
-del "BITS_DN.cmd" /y
+del "SPOTYdl - SETUP.bat" /y
+del 7z /y
+del pathed /y
+del "bitsadmin.exe" /y
+del ClnUp.bat /y
+goto success
+
+
+:cleanups
+echo Cleaning up your system...
+del "SPOTYdl - SETUP.bat" /y
+del 7z /y
+del pathed /y
 del "bitsadmin.exe" /y
 del "ffmpeg-n5.0-latest-win64-gpl-5.0.zip" /y
 del "python-3.10.2-amd64.exe" /y
 del ClnUp.bat /y
 goto success
-
 
 :failure
 cls
