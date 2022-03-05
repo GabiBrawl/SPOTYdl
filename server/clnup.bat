@@ -1,3 +1,12 @@
+@echo off
+title Cleaning up your system...
+color 07
+mode con: cols=70 lines=15
+
+
+:confirmation
+echo You're going to delete all the setup files.
+echo.
 set /p confirm=y/n^>
 if %confirm%==y goto c1
 if %confirm%==n goto failure
