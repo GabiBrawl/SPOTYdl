@@ -1,6 +1,8 @@
 @echo off
 color 07
 title SPOTYdl
+if exist s.ver (del s.ver && powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto prepreset) else (powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto prepreset)
+:prepreset
 if exist "setup.bat" (del "setup.bat" && goto preset) else (goto preset)
 :preset
 if exist "Downloads" (cls && cd Downloads && goto set) else (md Downloads && goto set)
@@ -8,10 +10,9 @@ if exist "Downloads" (cls && cd Downloads && goto set) else (md Downloads && got
 cls
 set wm=Normal
 set ver=1.3.3
-set channel=βeta
+set channel=Public
 ::set edition= [WebUI or non graphical]
 set sver=no value available
-if exist s.ver (del s.ver && powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto output-format) else (powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto output-format)
 goto output-format
 
 
@@ -46,7 +47,7 @@ if "%of%"=="5" (set format="ogg" && goto set-link)
 if "%of%"=="6" (set format="wav" && goto set-link)
 if "%of%"=="c" (set goto=output-format&&goto about)
 if "%of%"=="b" (if %wm%==Normal (set wm=Multiple&& goto output-format) else (set wm=Normal&& goto output-format))
-if "%of%"=="d" goto version
+if "%of%"=="d" (cd..&&goto version)
 if "%of%"=="mp3" (set format="mp3" && goto set-link)
 if "%of%"=="m4a" (set format="m4a" && goto set-link)
 if "%of%"=="flac" (set format="flac" && goto set-link)
@@ -108,6 +109,7 @@ goto set_working_mode
 
 
 :version
+mode con: cols=85 lines=15
 set swm=""
 set /p sver=<s.ver
 cls
@@ -125,13 +127,13 @@ echo  4) Go back
 echo  5) Reload server version
 echo.
 echo  Input the number that corresponds to your choice.
-echo  NOTE: don't install updates if server and installed versions are equal 
+echo  NOTE: you don't need to install updates if server and installed versions are equal 
 set /p swm= $ 
 if "%swm%"=="1" (goto donw_and_inst)
 if "%swm%"=="2" (goto update_chnl)
 if "%swm%"=="3" (goto help_v)
-if "%swm%"=="4" (cd Downloads && goto output-format)
-if "%swm%"=="5" (cls&&if exist s.ver (del s.ver && powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto version) else (powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto version))
+if "%swm%"=="4" (goto output-format)
+if "%swm%"=="5" (if exist s.ver (del s.ver && powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto version) else (powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto version))
 :invalid
 cls
 echo  The value you entered is invalid. Try again!
@@ -159,15 +161,17 @@ exit
 :update_chnl
 cls
 echo  How does this work?
-echo  When you change your update channel, you shall install
-echo  updates, or the Update Channel won't take any effect.
+echo  When you change your update channel, you will install
+echo  the latest update within the channel you chose.
 echo.
 echo  Currently available channels:
 echo  a) Public
 echo  b) βeta
+echo  c) go back
 set /p chnl=^>
-if %chnl%==a (set channel=Public && goto version)
-if %chnl%==b (set channel=βeta && goto version)
+if %chnl%==a (set channel=Public && goto donw_and_inst)
+if %chnl%==b (set channel=Beta && goto donw_and_inst)
+if %chnl%==c (goto version)
 :invalid
 cls
 echo  The value you entered is invalid. Try again!
@@ -210,10 +214,10 @@ goto set-link
 cls
 echo                    -HELP file-
 echo  This script lets you download music with spotDL
-echo  more easily.
+echo more easily.
 echo.
 echo  Simply chose a song format, and then the spotify
-echo  song link/name.
+echo song link/name.
 pause >nul
 goto %hlp%
 
@@ -232,6 +236,21 @@ echo   multiple times. Search for one music, and it'll
 echo   prompt you again for music location without exiting!
 echo.
 echo   Press any key to go back... && pause >nul && goto set_working_mode
+
+
+
+:help_v
+mode con: cols=60 lines=14
+cls
+echo                -Version HELP file-
+echo.
+echo.
+echo   Here you cand check and download new updates for SPOTYdl.
+echo  Just check if server and installed versions are equal. If
+echo  not, you may want to update.
+echo   The updating process takes no more than some seconds.
+echo.
+echo   Press any key to go back... && pause >nul && goto version
 
 
 
