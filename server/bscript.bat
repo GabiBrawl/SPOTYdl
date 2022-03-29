@@ -77,10 +77,16 @@ if "%link%"=="/multi" (goto multi)
 :download
 cls
 spotdl %link% --output-format %format%
+if link=="" goto invalid12345
 if %errorlevel% == 0 goto success
 if %errorlevel% == 1 goto error1
 ::if %errorlevel% == 2 goto success
 pause
+:invalid12345
+echo  You can't leave this blank.
+echo  Try again!
+timeout /t 3 >nul
+goto set-link
 
 
 :set_working_mode
