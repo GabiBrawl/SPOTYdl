@@ -10,7 +10,7 @@ if exist "Downloads" (cls && cd Downloads && goto set) else (md Downloads && got
 cls
 set wm=Normal
 set ver=1.3.3
-set channel=Public
+set channel=Beta
 ::set edition= [WebUI or non graphical]
 set sver=no value available
 goto output-format
