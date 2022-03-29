@@ -1,4 +1,6 @@
 @echo off
+echo lol
+pause
 color 07
 mode con: cols=70 lines=15
 title SPOTYdl
