@@ -67,11 +67,13 @@ mode con: cols=85 lines=7
 cls
 echo  Working mode: %wm%, to change it type /wm
 echo  Output format: %format%, to change it type /b
+echo  If you wanna download all songs on a txt file, use /multi
 echo.
 echo  Now paste the link to your song/playlist or simply the song name!! :D
 set /p link=Now: 
 if "%link%"=="/b" goto output-format
 if "%link%"=="/wm" (set goto=set-link && goto set_working_mode)
+if "%link%"=="/multi" (goto multi)
 :download
 cls
 spotdl %link% --output-format %format%
@@ -105,6 +107,21 @@ echo  The value you entered is invalid. Try again!
 timeout /t 3 >nul
 goto set_working_mode
 
+
+:multi
+echo  Now input the location to your text file.
+echo  Tip: you can drag and drop your file here to
+echo auto type it's location!
+echo.
+echo  To go back, use /b
+set /p txt=^>
+if %txt%==/b goto set-link
+for /F "usebackq tokens=*" %%A in (%txt%) do spotdl %%A --output-format %format%
+if %errorlevel% == 0 goto success
+if %errorlevel% == 1 goto error1
+echo This is yet bugged lol
+pause
+goto output-format
 
 
 
@@ -166,7 +183,7 @@ echo  the latest update within the channel you chose.
 echo.
 echo  Currently available channels:
 echo  a) Public
-echo  b) βeta
+echo  b) Beta
 echo  c) go back
 set /p chnl=^>
 if %chnl%==a (set channel=Public && goto donw_and_inst)
