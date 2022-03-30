@@ -12,7 +12,6 @@ set wm=Normal
 set ver=1.4.3
 set channel=Beta
 ::set edition= [WebUI or non graphical]
-set sver=no value available
 goto output-format
 
 
@@ -156,6 +155,7 @@ if %channel%==Public (
 :version
 mode con: cols=85 lines=15
 set swm=""
+set sver=no connection
 set /p sver=<s.ver
 cls
 echo       -Version menu-
