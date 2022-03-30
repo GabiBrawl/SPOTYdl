@@ -2,7 +2,6 @@
 mode con: cols=72 lines=15
 color 07
 title SPOTYdl
-if exist s.ver (del s.ver && powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto prepreset) else (powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto prepreset)
 :prepreset
 if exist "setup.bat" (del "setup.bat" && goto preset) else (goto preset)
 :preset
@@ -10,7 +9,7 @@ if exist "Downloads" (cls && cd Downloads && goto set) else (md Downloads && got
 :set
 cls
 set wm=Normal
-set ver=1.3.2
+set ver=1.4.1
 set channel=Beta
 ::set edition= [WebUI or non graphical]
 set sver=no value available
@@ -48,7 +47,7 @@ if "%of%"=="5" (set format="ogg" && goto set-link)
 if "%of%"=="6" (set format="wav" && goto set-link)
 if "%of%"=="c" (set goto=output-format&&goto about)
 if "%of%"=="b" (if %wm%==Normal (set wm=Multiple&& goto output-format) else (set wm=Normal&& goto output-format))
-if "%of%"=="d" (cd..&&goto version)
+if "%of%"=="d" (cd..&&goto dvfs)
 if "%of%"=="mp3" (set format="mp3" && goto set-link)
 if "%of%"=="m4a" (set format="m4a" && goto set-link)
 if "%of%"=="flac" (set format="flac" && goto set-link)
@@ -131,13 +130,15 @@ pause
 goto output-format
 
 
+:dvfs
+if exist s.ver (del s.ver && powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto version) else (powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto version)
 
 :version
 mode con: cols=85 lines=15
 set swm=""
 set /p sver=<s.ver
 cls
-echo      -Version menu-
+echo       -Version menu-
 echo  Installed Version: %ver%
 echo  Server Version: %sver%
 echo  Update channel: %channel%
