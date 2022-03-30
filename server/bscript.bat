@@ -131,7 +131,25 @@ goto output-format
 
 
 :dvfs
-if exist s.ver (del s.ver && powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto version) else (powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto version)
+if %channel%==Public (
+	if exist s.ver (
+		del s.ver
+		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver"
+		goto version
+	) else (
+		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver"
+		goto version
+	)
+) else (
+	if exist s.ver (
+		del s.ver
+		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile s.ver"
+		goto version
+	) else (
+		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile s.ver"
+		goto version
+	)
+)
 
 :version
 mode con: cols=85 lines=15
@@ -158,7 +176,26 @@ if "%swm%"=="1" (goto donw_and_inst)
 if "%swm%"=="2" (goto update_chnl)
 if "%swm%"=="3" (goto help_v)
 if "%swm%"=="4" (goto output-format)
-if "%swm%"=="5" (if exist s.ver (del s.ver && powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto version) else (powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto version))
+if "%swm%"=="5" (if %channel%==Public (
+	if exist s.ver (
+		del s.ver
+		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver"
+		goto version
+	) else (
+		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver"
+		goto version
+	)
+) else (
+	if exist s.ver (
+		del s.ver
+		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile s.ver"
+		goto version
+	) else (
+		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile s.ver"
+		goto version
+	)
+)
+)
 :invalid
 cls
 echo  The value you entered is invalid. Try again!
@@ -299,7 +336,7 @@ echo  Soon a WebUI version will be out. SPOTYdl is now implemented with an updat
 echo  upgrade anytime. Check out "Version" for more info! :D
 echo  And here we are!
 echo.
-echo                                      Welcome to SPOTYdl V1.3.3!
+echo                                      Welcome to SPOTYdl V1.4.1!
 echo  by GabiBrawl, 21st march 2022
 echo.
 echo  Press any key to go back...
