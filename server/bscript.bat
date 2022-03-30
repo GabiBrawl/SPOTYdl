@@ -208,6 +208,8 @@ goto version
 
 
 :donw_and_inst
+if %cd%==Downloads (cd..)
+cls
 echo  Downloading and installing the latest version of SPOTYdl.
 echo  Don't close this window.
 if %channel%==Public (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/script.bat -Outfile SPOTYdl.temp") else (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bscript.bat -Outfile SPOTYdl.temp")
