@@ -64,6 +64,7 @@ goto output-format
 
 
 :set-link
+if exist s.ver (del "s.ver")
 mode con: cols=85 lines=7
 cls
 echo  Working mode: %wm%, to change it type /wm
