@@ -1,4 +1,5 @@
 @echo off
+mode con: cols=72 lines=15
 color 07
 title SPOTYdl
 if exist s.ver (del s.ver && powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto prepreset) else (powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver" && goto prepreset)
@@ -9,7 +10,7 @@ if exist "Downloads" (cls && cd Downloads && goto set) else (md Downloads && got
 :set
 cls
 set wm=Normal
-set ver=1.3.3
+set ver=1.4.1
 set channel=Beta
 ::set edition= [WebUI or non graphical]
 set sver=no value available
@@ -169,7 +170,7 @@ goto version
 :donw_and_inst
 echo  Downloading and installing the latest version of SPOTYdl.
 echo  Don't close this window.
-if %channel%==Normal (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/script.bat -Outfile SPOTYdl.temp") else (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bscript.bat -Outfile SPOTYdl.temp")
+if %channel%==Public (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/script.bat -Outfile SPOTYdl.temp") else (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bscript.bat -Outfile SPOTYdl.temp")
 echo @echo off>>.\setup.bat
 echo title Finishing up>>.\setup.bat
 echo del SPOTYdl.bat>>.\setup.bat
