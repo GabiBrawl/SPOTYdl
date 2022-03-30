@@ -116,6 +116,7 @@ goto set_working_mode
 
 
 :multi
+cls
 echo  Now input the location to your text file.
 echo  Tip: you can drag and drop your file here to
 echo auto type it's location!
