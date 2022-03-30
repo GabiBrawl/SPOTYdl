@@ -227,10 +227,10 @@ exit
 
 :fail_github
 cls
-echo Could not establish connection with GitHub.
-echo Please try again later!
-timeout /t 3 > nul
-pause
+echo.
+echo  Could not establish connection with GitHub.
+echo  Please try again later!
+timeout /t 4 > nul
 goto version
 
 
