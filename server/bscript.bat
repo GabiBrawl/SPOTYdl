@@ -18,6 +18,7 @@ goto output-format
 
 
 :output-format
+if exist s.ver (del "s.ver")
 mode con: cols=72 lines=15
 set of=
 cls
@@ -175,7 +176,7 @@ set /p swm= $
 if "%swm%"=="1" (goto donw_and_inst)
 if "%swm%"=="2" (goto update_chnl)
 if "%swm%"=="3" (goto help_v)
-if "%swm%"=="4" (goto output-format)
+if "%swm%"=="4" (cd Downloads && goto output-format)
 if "%swm%"=="5" (if %channel%==Public (
 	if exist s.ver (
 		del s.ver
@@ -336,7 +337,7 @@ echo  Soon a WebUI version will be out. SPOTYdl is now implemented with an updat
 echo  upgrade anytime. Check out "Version" for more info! :D
 echo  And here we are!
 echo.
-echo                                      Welcome to SPOTYdl V1.4.1!
+echo                                      Welcome to SPOTYdl V1.3.3!
 echo  by GabiBrawl, 21st march 2022
 echo.
 echo  Press any key to go back...
