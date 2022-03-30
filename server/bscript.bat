@@ -9,7 +9,7 @@ if exist "Downloads" (cls && cd Downloads && goto set) else (md Downloads && got
 :set
 cls
 set wm=Normal
-set ver=1.4.1
+set ver=1.4.2
 set channel=Beta
 ::set edition= [WebUI or non graphical]
 set sver=no value available
@@ -337,7 +337,7 @@ echo  Soon a WebUI version will be out. SPOTYdl is now implemented with an updat
 echo  upgrade anytime. Check out "Version" for more info! :D
 echo  And here we are!
 echo.
-echo                                      Welcome to SPOTYdl V1.3.3!
+echo                                      Welcome to SPOTYdl V%ver%!
 echo  by GabiBrawl, 21st march 2022
 echo.
 echo  Press any key to go back...
