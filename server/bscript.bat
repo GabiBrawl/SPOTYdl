@@ -116,10 +116,15 @@ goto set_working_mode
 
 
 :multi
+mode con: cols=72 lines=10
 cls
-echo  Now input the location to your text file.
-echo  Tip: you can drag and drop your file here to
-echo auto type it's location!
+echo                      Multiple songs downloader mode
+echo.
+echo.
+echo   Now input the location to your text file.
+echo   Tip: drag and drop your file here to auto type it's location.
+echo   Note: To download all songs from multiple artists, paste the spotify
+echo  artists' links in the text file and not the artist name.
 echo.
 echo  To go back, use /b
 set /p txt=^>
