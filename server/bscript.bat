@@ -1,30 +1,42 @@
 @echo off
-mode con: cols=72 lines=15
-color 07
-title SPOTYdl
-:prepreset
-if exist "setup.bat" (del "setup.bat" && goto preset) else (goto preset)
-:preset
-if exist "Downloads" (cls && goto set) else (md Downloads && goto set)
-:set
-cls
+::---------------------------------------
 set wm=Normal
-set ver=1.4.4
+set ver=1.4.5
 set channel=Beta
 ::set edition= [WebUI or non graphical]
-goto output-format
+::---------------------------------------
+title SPOTYdl
+color 07
+mode con: cols=72 lines=15
+::---------------------------------------
+if exist setup.bat (
+	del setup.bat
+	if exist Downloads (
+		goto aoff
+	) else (
+		md Downloads
+		goto aoff
+	)
+) else (
+	if exist Downloads (
+		cls
+		goto aoff
+	) else (
+		md Downloads
+		goto aoff
+	)
+)
 
 
-
-:output-format
-if exist "s.ver" (del s.ver)
+:aoff ::audio output file format
+if exist s.ver (del s.ver)
 mode con: cols=72 lines=15
 set of=
 cls
-echo  Working mode: %wm%; for detailed info type /wm
+echo  Working mode: %wm%; for detailed info type "-wm"
 echo.
 echo.
-echo  Available formats:
+echo  Available audio file formats:
 echo   1) mp3                 4) opus
 echo   2) m4a		 5) ogg
 echo   3) flac		 6) wav
@@ -33,51 +45,42 @@ echo  Other options:
 echo   a) Help                b) Toggle Working Mode
 echo   c) About               d) Version
 echo.
-echo Input the number that corresponds to your choice.
-SET of=%~1
-SET char=%of:~0,1%
-set /p of=^>
-if "%of%"=="/help" (set hlp=output-format && goto help)
-if "%of%"=="a" (set hlp=output-format && goto help)
-if "%of%"=="1" (set format="mp3" && goto set-link)
-if "%of%"=="2" (set format="m4a" && goto set-link)
-if "%of%"=="3" (set format="flac" && goto set-link)
-if "%of%"=="4" (set format="opus" && goto set-link)
-if "%of%"=="5" (set format="ogg" && goto set-link)
-if "%of%"=="6" (set format="wav" && goto set-link)
-if "%of%"=="c" (set goto=output-format&&goto about)
-if "%of%"=="b" (if %wm%==Normal (set wm=Multiple&& goto output-format) else (set wm=Normal&& goto output-format))
-if "%of%"=="d" (goto dvfs)
-if "%of%"=="mp3" (set format="mp3" && goto set-link)
-if "%of%"=="m4a" (set format="m4a" && goto set-link)
-if "%of%"=="flac" (set format="flac" && goto set-link)
-if "%of%"=="opus" (set format="opus" && goto set-link)
-if "%of%"=="ogg" (set format="ogg" && goto set-link)
-if "%of%"=="wav" (set format="wav" && goto set-link)
-if "%of%"=="/wm" (set goto=output-format && goto set_working_mode)
+echo  Input the number that corresponds to your choice.
+set /p of=^>^> 
+if %of%==1 (set format="mp3" && goto set-link)
+if %of%==2 (set format="m4a" && goto set-link)
+if %of%==3 (set format="flac" && goto set-link)
+if %of%==4 (set format="opus" && goto set-link)
+if %of%==5 (set format="ogg" && goto set-link)
+if %of%==6 (set format="wav" && goto set-link)
+if %of%==a (set hlp=aoff && goto help)
+if %of%==b (if %wm%==Normal (set wm=Multiple&& goto aoff) else (set wm=Normal&& goto aoff))
+if %of%==c (set goto=aoff&&goto about)
+if %of%==d (goto dvfs)
+if %of%==-wm (set goto=aoff && goto set_working_mode)
 :invalid
 cls
 echo Sorry, but the value you entered is invalid. Try again!
 timeout /t 3 >nul
-goto output-format
+goto aoff
 
 
 :set-link
-if exist s.ver (del "s.ver")
+if exist s.ver (del s.ver)
 mode con: cols=85 lines=7
 cls
-echo  Working mode: %wm%, to change it type /wm
-echo  Output format: %format%, to change it type /b
-echo  If you wanna download all songs on a txt file, use /multi
+echo  Working mode: %wm%, to change it type "-wm"
+echo  Output format: %format%, to change it type "-b"
+echo  If you wanna download all songs on a txt file, use "-multi"
 echo.
 echo  Now paste the link to your song/playlist or simply the song name!! :D
 set /p link=Now: 
-if "%link%"=="/b" goto output-format
-if "%link%"=="/wm" (set goto=set-link && goto set_working_mode)
-if "%link%"=="/multi" (goto multi)
+if "%link%"=="-b" goto aoff
+if "%link%"=="-wm" (set goto=set-link && goto set_working_mode)
+if "%link%"=="-multi" (goto multi)
 :download
 cls
-spotdl %link% --output-format %format% --output .\Downloads\
+spotdl %link% --aoff %format% --output .\Downloads\
 if link=="" goto blank_invalid
 if %errorlevel% == 0 goto success
 if %errorlevel% == 1 goto error1
@@ -91,23 +94,20 @@ goto set-link
 
 
 :set_working_mode
+mode con: cols=72 lines=8
 set swm=""
 cls
-echo  Chose BEditor working mode
-::by GabiBrawl
-echo  1) Normal mode
-echo  2) Multiple mode
-echo  3) Help
 echo.
-echo  Input the number that corresponds to your choice.
-set /p swm= $ 
+echo                       Change BEditor working mode
+echo.
+::by GabiBrawl
+echo   1) Normal mode, will let you download music only once and then exit.
+echo   2) Multiple mode, won't exit when you download a song.
+echo.
+echo   Input the number that corresponds to your choice.
+set /p swm=^>^> 
 if "%swm%"=="1" (set wm=Normal&&goto %goto%)
 if "%swm%"=="2" (set wm=Multiple&&goto %goto%)
-if "%swm%"=="3" (goto help_wm)
-::----------------------------------------------------------------------------------------------------
-if "%swm%"=="Normal" (set wm=Normal&&goto %goto%)
-if "%swm%"=="Multiple" (set wm=Multiple&&goto %goto%)
-if "%swm%"=="help" (goto help_wm)
 :invalid
 cls
 echo  The value you entered is invalid. Try again!
@@ -126,15 +126,15 @@ echo   Tip: drag and drop your file here to auto type it's location.
 echo   Note: To download all songs from multiple artists, paste the spotify
 echo  artists' links in the text file and not the artist name.
 echo.
-echo  To go back, use /b
+echo  To go back, use "-b"
 set /p txt=^>
-if %txt%==/b goto set-link
-for /F "usebackq tokens=*" %%A in (%txt%) do spotdl %%A --output-format %format%
+if %txt%==-b goto set-link
+for /F "usebackq tokens=*" %%A in (%txt%) do spotdl %%A --aoff %format%
 if %errorlevel% == 0 goto success
 if %errorlevel% == 1 goto error1
 echo This is yet bugged lol
 pause
-goto output-format
+goto aoff
 
 
 :dvfs
@@ -158,6 +158,7 @@ if %channel%==Public (
 	)
 )
 
+
 :version
 mode con: cols=85 lines=15
 set swm=""
@@ -179,11 +180,11 @@ echo  5) Reload server version
 echo.
 echo  Input the number that corresponds to your choice.
 echo  NOTE: you don't need to install updates if server and installed versions are equal 
-set /p swm= $ 
+set /p swm=^>^> 
 if "%swm%"=="1" (goto donw_and_inst)
 if "%swm%"=="2" (goto update_chnl)
 if "%swm%"=="3" (goto help_v)
-if "%swm%"=="4" (goto output-format)
+if "%swm%"=="4" (goto aoff)
 if "%swm%"=="5" (if %channel%==Public (
 	if exist s.ver (
 		del s.ver
@@ -211,7 +212,6 @@ timeout /t 3 >nul
 goto version
 
 
-
 :donw_and_inst
 cls
 echo  Downloading and installing the latest version of SPOTYdl.
@@ -226,7 +226,6 @@ echo start SPOTYdl.bat>>.\setup.bat
 echo exit>>.\setup.bat
 start setup.bat
 exit
-
 
 
 :fail_github
@@ -245,7 +244,7 @@ echo  When you change your update channel, you will install
 echo  the latest update within the channel you chose.
 echo.
 echo  Currently available channels:
-echo  a) Public
+echo  a) Public (the most stable)
 echo  b) Beta
 echo  c) go back
 set /p chnl=^>
@@ -259,8 +258,6 @@ timeout /t 3 >nul
 goto set_working_mode
 
 
-
-
 :success
 cls
 echo Song/Playlist was successfuly downloaded!
@@ -269,9 +266,6 @@ echo.
 if %wm%==Normal (echo Press any key to exit) else (echo Press any key to continue)
 pause >nul
 if %wm%==Normal (exit) else (goto set-link)
-::set action="exit"
-::goto cleanup
-
 
 
 :error1
@@ -280,14 +274,6 @@ echo The music you tried to download was not found. Try again.
 powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Error; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your download failed...', [System.Windows.Forms.ToolTipIcon]::None)}"
 timeout /t 5 >nul
 goto set-link
-::set action="goto set-link"
-::goto cleanup
-
-
-
-::cleanup
-::del ".spotdl-cache" >nul
-::%action%
 
 
 :help
@@ -300,23 +286,6 @@ echo  Simply chose a song format, and then the spotify
 echo song link/name.
 pause >nul
 goto %hlp%
-
-
-
-:help_wm
-mode con: cols=55 lines=14
-cls
-echo                -WorkingMode HELP file-
-echo.
-echo.
-echo    Normal mode will make SPOTYdl download music
-echo   only once, then exit.
-echo    Multiple mode will let you download music
-echo   multiple times. Search for one music, and it'll
-echo   prompt you again for music location without exiting!
-echo.
-echo   Press any key to go back... && pause >nul && goto set_working_mode
-
 
 
 :help_v
@@ -333,8 +302,6 @@ echo.
 echo   Press any key to go back... && pause >nul && goto version
 
 
-
-
 :about
 mode con: cols=102 lines=20
 cls
@@ -349,9 +316,6 @@ echo  installed it, and it worked nicely, but it's not motivating to have to ope
 echo  download a song. So I created an automated script to chose format and song link. Working great, but
 echo  once again, I wanna publish it. So I created a setup to download and setup everything automaticaly,
 echo  so we don't need to go thru all that painful process of installation, nor usage.
-echo.
-echo  Soon a WebUI version will be out. SPOTYdl is now implemented with an update system, so you can
-echo  upgrade anytime. Check out "Version" for more info! :D
 echo  And here we are!
 echo.
 echo                                      Welcome to SPOTYdl V%ver%!
