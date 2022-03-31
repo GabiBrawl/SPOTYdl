@@ -10,8 +10,7 @@ if exist "Downloads" (cls && goto set) else (md Downloads && goto set)
 cls
 set wm=Normal
 set ver=1.4.4
-set channel=Beta
-::set edition= [WebUI or non graphical]
+set channel=Public
 goto output-format
 
 
