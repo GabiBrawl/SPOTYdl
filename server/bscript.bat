@@ -213,7 +213,6 @@ goto version
 
 
 :donw_and_inst
-if %cd%==Downloads (cd..)
 cls
 echo  Downloading and installing the latest version of SPOTYdl.
 echo  Don't close this window.
