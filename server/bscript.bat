@@ -222,7 +222,8 @@ cls
 echo  Downloading and installing the latest version of SPOTYdl.
 echo  Don't close this window.
 if %channel%==Public (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/script.bat -Outfile SPOTYdl.temp") else (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bscript.bat -Outfile SPOTYdl.temp")
-if %errorlevel%==1 (goto fail_github)
+if %errorlevel%==1 goto fail_github
+echo.
 echo @echo off>>.\setup.bat
 echo title Finishing up>>.\setup.bat
 echo del SPOTYdl.bat>>.\setup.bat
