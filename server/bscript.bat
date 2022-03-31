@@ -1,7 +1,7 @@
 @echo off
 ::---------------------------------------
 set wm=Normal
-set ver=1.4.5
+set ver=1.5
 set channel=Beta
 ::set edition= [WebUI or non graphical]
 ::---------------------------------------
@@ -29,8 +29,11 @@ if exist setup.bat (
 
 
 :aoff ::audio output file format
+title SPOTYdl
 if exist s.ver (del s.ver)
-mode con: cols=72 lines=15
+if exist news.temp (del news.temp)
+mode con: cols=72 lines=16
+color 07
 set of=
 cls
 echo  Working mode: %wm%; for detailed info type "-wm"
@@ -44,6 +47,7 @@ echo.
 echo  Other options:
 echo   a) Help                b) Toggle Working Mode
 echo   c) About               d) Version
+echo   e) News
 echo.
 echo  Input the number that corresponds to your choice.
 set /p of=^>^> 
@@ -57,6 +61,7 @@ if %of%==a (set hlp=aoff && goto help)
 if %of%==b (if %wm%==Normal (set wm=Multiple&& goto aoff) else (set wm=Normal&& goto aoff))
 if %of%==c (set goto=aoff&&goto about)
 if %of%==d (goto dvfs)
+if %of%==e (goto news)
 if %of%==-wm (set goto=aoff && goto set_working_mode)
 :invalid
 cls
@@ -217,7 +222,7 @@ cls
 echo  Downloading and installing the latest version of SPOTYdl.
 echo  Don't close this window.
 if %channel%==Public (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/script.bat -Outfile SPOTYdl.temp") else (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bscript.bat -Outfile SPOTYdl.temp")
-if %errorlevel%==1 goto fail_github
+if %errorlevel%==1 (goto fail_github)
 echo @echo off>>.\setup.bat
 echo title Finishing up>>.\setup.bat
 echo del SPOTYdl.bat>>.\setup.bat
@@ -226,15 +231,6 @@ echo start SPOTYdl.bat>>.\setup.bat
 echo exit>>.\setup.bat
 start setup.bat
 exit
-
-
-:fail_github
-cls
-echo.
-echo  Could not establish connection with GitHub.
-echo  Please try again later!
-timeout /t 4 > nul
-goto version
 
 
 :update_chnl
@@ -258,6 +254,32 @@ timeout /t 3 >nul
 goto set_working_mode
 
 
+:news
+title SPOTYdl - NEWS
+mode con: cols=66 lines=35
+color 4e
+if exist news.temp (
+	del news.temp
+	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/news.temp -Outfile news.temp"
+	if %errorlevel%==1 goto fail_github
+	goto news_read
+) else (
+	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/news.temp -Outfile news.temp"
+	if %errorlevel%==1 goto fail_github
+	goto news_read
+)
+:news_read
+if not exist news.temp goto fail_github
+cls
+echo  ------------------------------NEWS------------------------------
+type news.temp |More
+echo.
+echo.
+echo       Congrats! You've read all available news for today!
+echo          Press any key to go back to the main menu.
+pause>nul
+goto aoff
+
 :success
 cls
 echo Song/Playlist was successfuly downloaded!
@@ -274,6 +296,17 @@ echo The music you tried to download was not found. Try again.
 powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Error; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your download failed...', [System.Windows.Forms.ToolTipIcon]::None)}"
 timeout /t 5 >nul
 goto set-link
+
+
+:fail_github
+color 07
+mode con: cols=45 lines=4
+cls
+echo.
+echo  Could not establish connection with GitHub.
+echo  Please try again later!
+timeout /t 4 > nul
+goto aoff
 
 
 :help
