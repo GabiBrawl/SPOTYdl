@@ -5,11 +5,11 @@ title SPOTYdl
 :prepreset
 if exist "setup.bat" (del "setup.bat" && goto preset) else (goto preset)
 :preset
-if exist "Downloads" (cls && cd Downloads && goto set) else (md Downloads && goto set)
+if exist "Downloads" (cls && goto set) else (md Downloads && goto set)
 :set
 cls
 set wm=Normal
-set ver=1.4.3.6
+set ver=1.4.4
 set channel=Beta
 ::set edition= [WebUI or non graphical]
 goto output-format
@@ -17,9 +17,7 @@ goto output-format
 
 
 :output-format
-cd..
 if exist "s.ver" (del s.ver)
-cd Downloads
 mode con: cols=72 lines=15
 set of=
 cls
@@ -49,7 +47,7 @@ if "%of%"=="5" (set format="ogg" && goto set-link)
 if "%of%"=="6" (set format="wav" && goto set-link)
 if "%of%"=="c" (set goto=output-format&&goto about)
 if "%of%"=="b" (if %wm%==Normal (set wm=Multiple&& goto output-format) else (set wm=Normal&& goto output-format))
-if "%of%"=="d" (cd..&&goto dvfs)
+if "%of%"=="d" (goto dvfs)
 if "%of%"=="mp3" (set format="mp3" && goto set-link)
 if "%of%"=="m4a" (set format="m4a" && goto set-link)
 if "%of%"=="flac" (set format="flac" && goto set-link)
@@ -79,13 +77,13 @@ if "%link%"=="/wm" (set goto=set-link && goto set_working_mode)
 if "%link%"=="/multi" (goto multi)
 :download
 cls
-spotdl %link% --output-format %format%
-if link=="" goto invalid12345
+spotdl %link% --output-format %format% --output .\Downloads\
+if link=="" goto blank_invalid
 if %errorlevel% == 0 goto success
 if %errorlevel% == 1 goto error1
 ::if %errorlevel% == 2 goto success
 pause
-:invalid12345
+:blank_invalid
 echo  You can't leave this blank.
 echo  Try again!
 timeout /t 3 >nul
@@ -185,7 +183,7 @@ set /p swm= $
 if "%swm%"=="1" (goto donw_and_inst)
 if "%swm%"=="2" (goto update_chnl)
 if "%swm%"=="3" (goto help_v)
-if "%swm%"=="4" (cd Downloads && goto output-format)
+if "%swm%"=="4" (goto output-format)
 if "%swm%"=="5" (if %channel%==Public (
 	if exist s.ver (
 		del s.ver
@@ -210,7 +208,6 @@ if "%swm%"=="5" (if %channel%==Public (
 cls
 echo  The value you entered is invalid. Try again!
 timeout /t 3 >nul
-cd Downloads
 goto version
 
 
