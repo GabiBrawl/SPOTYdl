@@ -10,7 +10,8 @@ if exist "Downloads" (cls && goto set) else (md Downloads && goto set)
 cls
 set wm=Normal
 set ver=1.4.4
-set channel=Public
+set channel=Beta
+::set edition= [WebUI or non graphical]
 goto output-format
 
 
@@ -244,7 +245,7 @@ echo  When you change your update channel, you will install
 echo  the latest update within the channel you chose.
 echo.
 echo  Currently available channels:
-echo  a) Public
+echo  a) Public (the most stable)
 echo  b) Beta
 echo  c) go back
 set /p chnl=^>
