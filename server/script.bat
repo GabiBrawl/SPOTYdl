@@ -9,8 +9,8 @@ if exist "Downloads" (cls && goto set) else (md Downloads && goto set)
 :set
 cls
 set wm=Normal
-set ver=1.4.4
-set channel=Beta
+set ver=1.4.5
+set channel=Public
 ::set edition= [WebUI or non graphical]
 goto output-format
 
