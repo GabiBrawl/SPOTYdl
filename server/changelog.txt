@@ -1,0 +1,21 @@
+--------------------V1.5--------------------
+
+Introducing NEWS! You can check the latest news about SPOTYdl in the new news section!!
+-Corrected several bugs.
+No internet connection identifier added. When there's no internet connection, or the server is down, SPOTYdl will tell you to try again later.
+-"News", and "Install updates" won't run without internet.
+Commands now don't use the backslash (/) prefix. Now they use the subtraction symbol (-) as prefix.
+
+
+--------------------V1.5.1--------------------
+Repaired a bug related to the internet connection detector.
+
+
+---------------------V1.6---------------------
+Improvements to the version menu.
+ -If you're running the same version as the sever, it will display a button to reinstall and not to install updates.
+ -Public caption changed to Stable.
+ -If you're offline, the install/reinstall option (1) was changed to "No connection"
+Repaired a bug in the main menu, in where if you inputed a wrong value, it will break tha program.
+Now if you leave any text input blank, SPOTYdl will propmt you to try again.
+From now on, the new versions won't be published on the releases section. In there, there'll be only the setup file (all the other ones are going to be removed). SPOTYdl will be updated in the server, and this file can be downloaded thru the main menu.
