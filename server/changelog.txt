@@ -1,69 +1,72 @@
---------------------V0.1-------------------- 25/02/2022
+_______________________________V0.1_______________________________ 25/02/2022
                INITIAL RELEASE
-You'll experience many bugs(yeah, so many that I'm uploading it now, for help... pls?), but you can already chose the final music format and download normally.
-You'll ALWAYS receive notifications as failed, don't worry, most of the times it didn't, its just a bug with %errorlevel%...
-SETUP (NOT TESTED): you won't be able to use this without running the setup file first (if it's not working, open the setup file, and download the files in the links and then install them. You'll need to run some commands too...)
+* You'll experience many bugs(yeah, so many that I'm uploading it now, for help... pls?), but you can already chose the final music format and download normally.
+* You'll ALWAYS receive notifications as failed, don't worry, most of the times it didn't, its just a bug with %errorlevel%...
+* SETUP (NOT TESTED): you won't be able to use SPOTYdl without running the setup file first.
 
 
---------------------V1.0-------------------- 27/02/2022
-Many bugs removed.
-Added an automated cleanup system.
+_______________________________V1.0_______________________________ 27/02/2022
+* Several bugs removed.
+* Added an automated cleanup system.
 
 
---------------------V1.1-------------------- 27/02/2022
-Removed a tiny bug in the setup :D
+_______________________________V1.1_______________________________ 27/02/2022
+* Removed a tiny bug in the setup :D
 
 
---------------------V1.2-------------------- 28/02/2022
-Changed the UAC prompt: now it only asks for permissions after downloading all required files.
-Updated the clnup.bat server file.
+_______________________________V1.2_______________________________ 28/02/2022
+* SETUP: Changed the UAC prompt: now it only asks for permissions after downloading all required files.
+* Updated the clnup.bat server file.
 
 
--------------------V1.3.0------------------- 04/03/2022
-Changed the download system;
-Added folders to organize mess...;
-Correction of bugs;
-Optimized code.
+______________________________V1.3.0______________________________ 04/03/2022
+* Changed the download system;
+* Added folders to organize mess...;
+* Correction of bugs;
+* Optimized code.
 
 
--------------------V1.3.1------------------- 04/03/2022
-Forgot to change the way UAC prompt is called in v1.3β: now it calls UAC right after running the program.
+______________________________V1.3.1______________________________ 04/03/2022
+* Forgot to change the way UAC prompt is called in v1.3β: now it calls UAC right after running the program.
 
 
--------------------V1.3.2------------------- 05/03/2022
-Corrected a little bug of v1.3.1β: Power shell now downloads GitHub files correctly!
+______________________________V1.3.2______________________________ 05/03/2022
+* Corrected a little bug of v1.3.1β: Power shell now downloads GitHub files correctly!
 
 
--------------------V1.4.1------------------- 30/03/2022
-Auto updating system! Now you can update SPOTYdl from within the main menu!!
--Corrected many many many (should I continue? lol) bugs (:
--You can see the version you're currently running, and the version available on the server.
--There are two new Editions: Public (edition ready for use) and Beta. You can enroll to beta after installing SPOTYdl, in the version menu.
-Redesigned the whole program.
-Help and About sections are now available!
-You can now import a txt file with all the songs or artists (use artist link). One entry per line.
-Many code optimizations.
-Corrected many bugs from the previous versions.
+______________________________V1.4.1______________________________ 30/03/2022
+* Auto updating system! Now you can update SPOTYdl from within the main menu!!
+   *Corrected many many many (should I continue? lol) bugs (:
+   *You can see the version you're currently running, and the version available on the server.
+   *There are two new Editions: Public (edition ready for use) and Beta. You can enroll to beta after installing SPOTYdl, in the version menu.
+* Redesigned the whole program.
+* Help and About sections are now available!
+* You can now import a txt file with all the songs or artists (use artist link). One entry per line.
+* Many code optimizations.
+* Corrected many bugs from the previous versions.
 
 
---------------------V1.5-------------------- 31/03/2022
-Introducing NEWS! You can check the latest news about SPOTYdl in the new news section!!
--Corrected several bugs.
-No internet connection identifier added. When there's no internet connection, or the server is down, SPOTYdl will tell you to try again later.
--"News", and "Install updates" won't run without internet.
-Commands now don't use the backslash (/) prefix. Now they use the subtraction symbol (-) as prefix.
+_______________________________V1.5_______________________________ 31/03/2022
+* Introducing NEWS! You can check the latest news about SPOTYdl in the new news section!!
+   * Corrected several bugs.
+* No internet connection identifier added. When there's no internet connection, or the server is down, SPOTYdl will tell you to try again later.
+   * "News", and "Install updates" now won't run without internet.
+* Commands now don't use the backslash (/) prefix. Now they use the subtraction symbol (-) as prefix.
 
 
--------------------V1.5.1------------------- 31/03/2022
-Repaired a bug related to the internet connection detector.
+______________________________V1.5.1______________________________ 31/03/2022
+* Repaired a bug related to the internet connection detector.
 
 
---------------------V1.6-------------------- 01/04/2022
-Improvements to the version menu.
- -If you're running the same version as the server, it will display a choice to reinstall and not the choice to install updates.
- -Public caption changed to Stable.
- -If you're offline, the install/reinstall option (1) was changed to "No connection"
-Repaired a bug in the main menu, in where if you inputed a wrong value, it would break tha program.
-Now if you leave any text input blank, SPOTYdl will propmt you to try again.
-From now on, the new versions won't be published on the releases section. In there, there'll be only the setup file (all the other ones are going to be removed). SPOTYdl will be updated in the server, and this file can be downloaded thru the main menu.
-Added changelog download option in the main menu. Now all the history of changelog will be public!
+_______________________________V1.6_______________________________ 02/04/2022
+* Improvements to the version menu.
+   * If you're running the same version as the server, it will display a choice to reinstall and not the choice to install updates.
+   * Public caption changed to Stable.
+   * If you're offline, the install/reinstall option (1) was changed to "No connection"
+* Repaired a bug in the main menu, in where if you inputed a wrong value, it would break tha program.
+* Now if you leave any text input blank, SPOTYdl will propmt you to try again.
+* From now on, the new versions won't be published on the releases section. In there, there'll be only the setup file (all the existing ones are going to be removed). SPOTYdl will be updated in the server, and this file can be downloaded thru the main menu.
+* Added changelog download option in the main menu. Now all the history of changelog will be public!
+* Corrected a bug on the downloading song moment, in where each separated word would be a separated song.
+   * Corrected the same bug in the txt importing mode
+* Created a system in where if the songs were successfully downloaded, SPOTYdl will delete all temporary files that were created by spotDL, cleaning up the Downloads folder (:
