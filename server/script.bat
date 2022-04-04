@@ -1,8 +1,8 @@
 @echo off
 ::---------------------------------------
 set wm=Normal
-set ver=1.6
-set channel=Beta
+set ver=1.6.1
+set channel=Stable
 ::set edition= [WebUI or non graphical]
 ::---------------------------------------
 title SPOTYdl
