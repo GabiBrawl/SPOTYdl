@@ -7,7 +7,6 @@ set channel=Beta
 ::---------------------------------------
 title SPOTYdl
 color 07
-mode con: cols=72 lines=15
 ::---------------------------------------
 if exist setup.bat (
 	del setup.bat
@@ -84,7 +83,6 @@ set /p link=^>^>
 if "%link%"=="-b" goto aoff
 if "%link%"=="-wm" (set goto=set-link && goto set_working_mode)
 if "%link%"=="-txt" (goto multi)
-::if "%link%" equ "" goto blank_invalid
 if not defined link goto blank_invalid
 :download
 cls
@@ -92,7 +90,6 @@ spotdl "%link%" --output-format %format% --output .\Downloads\
 if %errorlevel% == 0 goto clnup
 if %errorlevel% == 1 goto error1
 ::if %errorlevel% == 2 goto success
-pause
 :blank_invalid
 echo   You can't leave this field blank. Try again!
 timeout /t 3 >nul
@@ -115,7 +112,7 @@ echo  To go back, use "-b"
 set /p txt=^>^>
 if not defined txt goto ibtxt
 if %txt%==-b goto set-link
-for /F "usebackq tokens=*" %%A in (%txt%) do spotdl "%%A" --aoff %format%
+for /F "usebackq tokens=*" %%A in (%txt%) do spotdl "%%A" --output-format %format% --output .\Downloads\
 if %errorlevel% == 0 goto clnup
 if %errorlevel% == 1 goto error1
 echo This is yet bugged lol
