@@ -70,3 +70,8 @@ _______________________________V1.6_______________________________ 02/04/2022
 * Corrected a bug on the downloading song moment, in where each separated word would be a separated song.
    * Corrected the same bug in the txt importing mode
 * Created a system in where if the songs were successfully downloaded, SPOTYdl will delete all temporary files that were created by spotDL, cleaning up the Downloads folder (:
+
+
+______________________________V1.6.1______________________________ 04/04/2022
+* Corrected some bugs related to the multiple song downloader.
+* Optimized the code
