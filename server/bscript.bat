@@ -1,7 +1,7 @@
 @echo off
 ::---------------------------------------
 set wm=Normal
-set ver=1.6
+set ver=1.6.1
 set channel=Beta
 ::set edition= [WebUI or non graphical]
 ::---------------------------------------
