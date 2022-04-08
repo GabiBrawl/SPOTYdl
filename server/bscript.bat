@@ -43,7 +43,7 @@ echo   e) News                f) Changelog
 echo.
 echo  Input the number that corresponds to your choice.
 set /p of=^>^>
-if not defined %of% (goto aoffe)
+if not defined of (goto aoffe)
 if "%of%"=="1" (set format="mp3" && goto set-link)
 if "%of%"=="2" (set format="m4a" && goto set-link)
 if "%of%"=="3" (set format="flac" && goto set-link)
