@@ -1,8 +1,8 @@
 @echo off
 ::---------------------------------------
 set wm=Multiple
-set ver=1.7
-set channel=Beta
+set ver=1.7.1
+set channel=Stable
 ::set edition= [WebUI or non graphical]
 set count=0
 ::---------------------------------------
