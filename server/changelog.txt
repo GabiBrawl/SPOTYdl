@@ -77,7 +77,7 @@ ______________________________V1.6.1______________________________ 04/04/2022
 * Optimized the code
 
 
-_______________________________V1.7_______________________________ 00/04/2022
+_______________________________V1.7_______________________________ 08/04/2022
 * Working modes: predefinition is now set to Multiple.
 * Created a sort of security, that won't let me update while coding a newer version...
 * Optimized some code.
@@ -88,3 +88,9 @@ _______________________________V1.7_______________________________ 00/04/2022
 * Created a history system that will save all the songs you download into a txt file. You can import the txt file back to SPOTYdl to download all the songs again!
 * Added some captions in the txt importing page that will inform users about the drag and drop feature over the app.
 * Added the blank field error to the main screen.
+
+
+
+______________________________V1.7.1______________________________ 08/04/2022
+* Corrected a big bug at the main menu: even if you inputed a value, it would inform you to not leave the field in blank.
+* Corrected some errors in the changelog.
