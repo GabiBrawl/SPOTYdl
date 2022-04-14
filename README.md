@@ -1,7 +1,7 @@
 # SPOTYdl
 ### Download spotify songs/playlists with ease!
 
-What's SPOTYdl you may ask. SPOTYdl is a script to help you download songs using spotDL more easilly, and a couple of useful features were added!
+What's SPOTYdl you may ask. SPOTYdl is a script to help you download songs using spotDL more easilly, and has a couple of new and cool features more than the main project. (spotDL)
 ![Screenshot (379)](https://user-images.githubusercontent.com/85069997/163430374-f29fdf32-eb2e-46e0-8f9c-706d7d316194.png)
 
 # Features
@@ -17,8 +17,7 @@ You can import a text file containing a list with your desired songs. Yes, you c
 ![Screenshot (389)](https://user-images.githubusercontent.com/85069997/163460056-2d6753cb-c8ef-4590-b8e1-543b7a774cbc.png)
 How to import? Just drag and drop your file over the program's icon!!
 
-https://user-images.githubusercontent.com/85069997/163461993-4f875f05-2125-4774-ba5f-249f3df9f932.mov
-
+<img src="https://user-images.githubusercontent.com/85069997/163463744-6f12d9f9-49b5-49ce-86f4-a2ef63043359.gif" width="480" height="270">
 
 ### Updates
 You don't need to come back here everytime you wanna check for updates... there's a specified menu for that!
