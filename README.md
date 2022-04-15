@@ -15,6 +15,7 @@ Yup! We do have it here too! The history is saved to history.txt
 ### Txt file importer!
 You can import a text file containing a list with your desired songs. Yes, you can import the history or the list!
 ![Screenshot (389)](https://user-images.githubusercontent.com/85069997/163460056-2d6753cb-c8ef-4590-b8e1-543b7a774cbc.png)
+
 How to import? Just drag and drop your file over the program's icon!!
 
 <img src="https://user-images.githubusercontent.com/85069997/163463744-6f12d9f9-49b5-49ce-86f4-a2ef63043359.gif" width="480" height="270">
@@ -26,6 +27,7 @@ You don't need to come back here everytime you wanna check for updates... there'
 There are two update channels: the Stable and the Beta.
 
 ![Screenshot (395)](https://user-images.githubusercontent.com/85069997/163462749-110dd6fb-9d06-4d39-905f-1be848d00be6.png)
+
 So why don't I use only the beta you may ask, the Beta is more buggy than the Stable version... So if you wanna use this program daily, I suggest you the Stable channel. If you wanna be the first to try new features, chose the Beta!1!
 
 
@@ -36,4 +38,4 @@ All and every section has all the necessary help to guide any user thru the usag
 ![Screenshot (385)](https://user-images.githubusercontent.com/85069997/163458874-095b0c42-1391-4939-bc5e-9c15c4b98cd7.png)
 
 # Disclaimer
-In order for SPOTYdl to work, I needed to use spotDL. You can access their github ![here](https://github.com/spotDL), or for some help, their Discord ![too](https://discord.gg/xCa23pwJWY)!
+In order for SPOTYdl to work, I needed to use spotDL. You can access their github ![here](https://github.com/spotDL), or for some help, their Discord ![too](https://discord.gg/xCa23pwJWY)! To install it, I created the setup script, that will download all dependencies, install them and add them to path automatically!! (yeah... it's a bit annoing to do it all manually)
