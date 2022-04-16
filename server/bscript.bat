@@ -1,47 +1,57 @@
 @echo off
 ::---------------------------------------
-set wm=Multiple
-set ver=1.7.1
-set channel=Beta
-::set edition= [WebUI or non graphical]
 set count=0
+set ver=1.8
+set wm=Multiple
+set channel=Stable
+set curdir=%~dp0Downloads\
+set data=%appdata%\SPOTYdl\
 ::---------------------------------------
 title SPOTYdl
 color 07
 ::---------------------------------------
 if exist setup.bat (del setup.bat)
-if exist Downloads (
-	if not "%~1"=="" (goto file_import)
-	goto aoff
-) else (
+if not exist %data% (md %data%)
+if not exist Downloads (
 	md Downloads
-	if not "%~1"=="" (goto file_import)
-	goto aoff
+	echo.>>".\Downloads\Desktop.ini"
+	echo [.ShellClassInfo]>>".\Downloads\Desktop.ini"
+	echo ConfirmFileOp=0>>".\Downloads\Desktop.ini"
+	echo LocalizedResourceName=@%%SystemRoot%%\system32\shell32.dll,-21798>>".\Downloads\Desktop.ini"
+	echo IconResource=%%SystemRoot%%\system32\imageres.dll,-184>>".\Downloads\Desktop.ini"
+	echo [ViewState]>>".\Downloads\Desktop.ini"
+	echo Mode=>>".\Downloads\Desktop.ini"
+	echo Vid=>>".\Downloads\Desktop.ini"
+	echo FolderType=Music>>".\Downloads\Desktop.ini"
 )
+if not "%~1"=="" (goto file_import)
+goto aoff
 
 
 :aoff ::audio output file format
 title SPOTYdl
 if exist s.ver (del s.ver)
 if exist news.temp (del news.temp)
-mode con: cols=72 lines=18
+mode con: cols=72 lines=20
 color 07
 set of=
 cls
+echo.
 echo  Working mode: %wm%; for detailed info type "-wm"
 echo.
 echo.
 echo  Available audio file formats:
 echo   1) mp3                 4) opus
-echo   2) m4a		 5) ogg
-echo   3) flac		 6) wav
+echo   2) m4a                 5) ogg
+echo   3) flac                6) wav
 echo.
 echo  Other options:
 echo   a) Help                b) Toggle Working Mode
 echo   c) About               d) Version
 echo   e) News                f) Changelog
+echo   g) List "Downloads"    h) Disclaimer
 echo.
-echo  Input the number that corresponds to your choice.
+echo  Input the value that corresponds to your choice.
 set /p of=^>^>
 if not defined of (goto aoffe)
 if "%of%"=="1" (set format="mp3" && goto set-link)
@@ -56,6 +66,8 @@ if "%of%"=="c" (set goto=aoff&&goto about)
 if "%of%"=="d" (goto dvfs)
 if "%of%"=="e" (goto news)
 if "%of%"=="f" (goto changelog)
+if "%of%"=="g" (goto list)
+if "%of%"=="h" (goto disclaimer)
 if "%of%"=="hi" (echo  Hello and Welcome to SPOTYdl!&&timeout /t 5 >nul&&goto aoff)
 if "%of%"=="-wm" (set goto=aoff && goto set_working_mode)
 echo  Sorry, but the value you entered is invalid. Try again!
@@ -69,15 +81,14 @@ goto aoff
 
 :set-link
 if exist s.ver (del s.ver)
-mode con: cols=69 lines=9
+mode con: cols=69 lines=8
 set link=
 cls
 echo.
-echo   Working mode: %wm%, to change it type "-wm"
 echo   Output format: %format%, to change it type "-b"
-echo   If you wanna download all songs on a txt file, use "-txt"
+echo   If you wanna download all songs listed on a txt file, use "-txt"
 echo.
-echo   Paste the link to your song/playlist or simply the song name!! :D
+echo   Paste the link to a song/playlist or simply the song name!! :D
 set /p link=^>^>
 if "%link%"=="-b" goto aoff
 if "%link%"=="-wm" (set goto=set-link && goto set_working_mode)
@@ -90,9 +101,10 @@ spotdl "%link%" --output-format %format% --output .\Downloads\
 if %errorlevel% == 0 goto clnup
 if %errorlevel% == 1 goto error1
 ::if %errorlevel% == 2 goto success
+goto spotDL_trouble
 :blank_invalid
 set /a count=%count%+1
-echo   You can't leave this field blank. Try again!
+echo   You can't leave this field in blank. Try again!
 timeout /t 3 >nul
 goto set-link
 
@@ -106,17 +118,19 @@ echo.
 echo.
 echo   Now input the location to your text file.
 echo   Tip: drag and drop your file here to auto type it's location.
+echo   Tip: You can drag your txt file over this app's icon to start
+echo  the download process faster!
 echo   Note: To download all songs from artists, paste the spotify
 echo  artists' links in the text file and not the artists' name.
-echo   Tip: You can drag your txt file over this app's icon to start
-echo  downloading your songs faster!
 echo.
 echo  To go back, use "-b"
 set /p txt=^>^>
-if "%txt%"=="history.txt" (
-	echo  You have to rename the history file to continue.
-	timeout /t 4 >nul
-	goto multi
+for /r %%a in ("%txt%") do (
+	if "%%~na"=="history" (
+		echo  You have to rename the history file to continue.
+		timeout /t 4 >nul
+		goto multi
+	)
 )
 if not defined txt goto ibtxt
 if %txt%==-b goto set-link
@@ -157,23 +171,13 @@ goto set_working_mode
 
 :dvfs
 if %channel%==Stable (
-	if exist s.ver (
-		del s.ver
-		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver">nul
-		goto version
-	) else (
-		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver">nul
-		goto version
-	)
+	if exist s.ver (del s.ver)
+	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver">nul
+	goto version
 ) else (
-	if exist s.ver (
-		del s.ver
-		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile s.ver">nul
-		goto version
-	) else (
-		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile s.ver">nul
-		goto version
-	)
+	if exist s.ver (del s.ver)
+	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile s.ver">nul
+	goto version
 )
 
 
@@ -217,25 +221,14 @@ if "%swm%"=="2" (goto update_chnl)
 if "%swm%"=="3" (goto help_v)
 if "%swm%"=="4" (goto aoff)
 if "%swm%"=="5" (if %channel%==Stable (
-	if exist s.ver (
-		del s.ver
-		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver">nul
-		goto version
-	) else (
-		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver">nul
-		goto version
-	)
+	if exist s.ver (del s.ver)
+	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver">nul
+	goto version
 ) else (
-	if exist s.ver (
-		del s.ver
-		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile s.ver">nul
-		goto version
-	) else (
-		powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile s.ver">nul
-		goto version
-	)
-)
-)
+	if exist s.ver (del s.ver)
+	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile s.ver">nul
+	goto version
+))
 echo  The value you entered is invalid. Try again!
 timeout /t 3 >nul
 goto version
@@ -264,6 +257,7 @@ exit
 
 :update_chnl
 mode con: cols=60 lines=12
+set chnl=
 cls
 echo.
 echo   How does this work?
@@ -282,10 +276,12 @@ if not defined chnl goto version
 
 
 :file_import
-mode con: cols=90 lines=18
+if not exist %~dp0Downloads\ (md %~dp0Downloads\)
+mode con: cols=80 lines=18
 set _flnm=%~n1
 set _ext=%~x1
 set txt=%~1
+set "err=0" ::if %errorlevel% EQU 0/1/2 (set /a err=%err%+1)
 cls
 echo.
 if not "%_ext%"==".txt" (
@@ -297,13 +293,21 @@ if not "%_ext%"==".txt" (
 	exit
 )
 if "%_flnm%%_ext%"=="history.txt" (
-	echo  You have to rename the history file to continue.
+	echo   You have to rename the history file to continue.
+	echo.
+	echo   If I didn't lock the use of the history file with it's
+	echo  original name, you would get into an infinite loop.
+	echo   Why? Cause SPOTYdl will be reading the history file,
+	echo  and adding new entries to it each time it tries to
+	echo  download a song, will create an infinite loop.
+	echo.
 	timeout /t 4 >nul
 	echo  Press any key to exit...
 	pause >nul
 	exit
 )
 echo  Imported file: "%_flnm%%_ext%"
+echo  Will download to %curdir%
 echo.
 echo  Chose an audio file format:
 echo   1) mp3                 4) opus
@@ -320,26 +324,25 @@ if not "%_flnm%" EQU "02_02_2022" (echo  Reading "%_flnm%" and downloading all l
 echo.
 for /F "usebackq tokens=*" %%A in ("%txt%") do (
 	echo %%A>>history.txt
-	spotdl "%%A" --output-format %format% --output .\Downloads\
+	echo Date: %date%, Time: %time% >> %data%\output.txt
+	spotdl "%%A" --output-format %format% --output %curdir%
 )
-echo  Done! Press any key to exit.
+echo.
+echo  Done!
+echo  There were %err% songs that failed downloading.
+echo.
+echo  Press any key to exit...
 pause >nul
 exit
+
 
 :news
 title SPOTYdl - NEWS
 mode con: cols=66 lines=35
 color 4e
-if exist news.temp (
-	del news.temp
-	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/news.temp -Outfile news.temp" >nul
-	if %errorlevel%==1 goto fail_github
-	goto news_read
-) else (
-	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/news.temp -Outfile news.temp" >nul
-	if %errorlevel%==1 goto fail_github
-	goto news_read
-)
+if exist news.temp (del news.temp)
+powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/news.temp -Outfile news.temp" >nul
+if %errorlevel%==1 goto fail_github
 :news_read
 if not exist news.temp goto fail_github
 cls
@@ -352,6 +355,39 @@ echo          Press any key to go back to the main menu.
 pause>nul
 goto aoff
 
+
+:list
+mode con: cols=62 lines=6
+if exist .\Downloads\.spotdl-cache (del .\Downloads\.spotdl-cache >nul)
+if exist SongList.txt (goto overwrite)
+set lcount=0
+cls
+echo.
+echo  We're listing all your downloaded songs into SongList.txt
+for /r %%a in (.\Downloads\*) do (@echo %%~na>>SongList.txt)
+for /f %%b in ('dir .\Downloads\ ^| find "File(s)"') do (set lcount=%%b)
+echo  Done! %lcount% entries were registered.
+echo.
+echo  Press any key to go back to the main menu...
+pause >nul
+goto aoff
+:overwrite
+mode con: cols=33 lines=4
+cls
+echo             -ERROR-
+echo  "SongList.txt" already exists.
+echo         Overwrite? (y/n)
+set /p o=^>^>
+if %o%==y (
+	del SongList.txt
+	goto lister
+)
+if %o%==n (goto aoff)
+cls
+echo The value you entered is invalid. Try again!
+timeout /t 3 >nul
+goto overwrite
+
 :clnup
 cls
 echo.
@@ -361,7 +397,7 @@ del .\Downloads\.spotdl-cache >nul
 echo   Song/Playlist was successfuly downloaded!
 powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Information; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your download is completed!', [System.Windows.Forms.ToolTipIcon]::None)}">nul
 echo.
-if %wm%==Normal (echo Press any key to exit) else (echo Press any key to continue)
+if %wm%==Normal (echo  Press any key to exit) else (echo  Press any key to continue)
 pause >nul
 if %wm%==Normal (exit) else (goto set-link)
 
@@ -396,14 +432,33 @@ timeout /t 4 > nul
 goto aoff
 
 
-:help
+:disclaimer
+mode con: cols=57 lines=8
 cls
-echo                    -HELP file-
-echo  This script lets you download music with spotDL
-echo more easily.
 echo.
-echo  Simply chose a song format, and then the spotify
-echo song link/name.
+echo                      -Disclaimer-
+echo.
+echo   SPOTYdl is not endorsed by, directly affiliated with,
+echo  maintained, authorized, or sponsored by spotDL.
+echo.
+echo   Press any key to go back to the main menu...
+pause >nul
+goto aoff
+
+
+:help
+mode con: cols=52 lines=11
+cls
+echo.
+echo                     -HELP file-
+echo.
+echo   This script lets you download music using spotDL
+echo  more easily.
+echo.
+echo   Simply chose a song format, and then the spotify
+echo  song link/name.
+echo.
+echo  Press any key to go back...
 pause >nul
 goto %hlp%
 
@@ -442,3 +497,19 @@ echo.
 echo  Press any key to go back...
 pause>nul
 goto %goto%
+
+
+:spotDL_trouble
+mode con: cols=54 lines=11
+cls
+echo.
+echo   Hey there! You can't simply run this script without
+echo  installing spotDL first... There's a script on my
+echo  github to automate the installation!
+echo.
+echo.
+echo   ERROR CODE: spotdl was not recognized as a command.
+echo.
+echo   Press any key to exit...
+pause >nul
+exit
