@@ -2,16 +2,25 @@
 ::---------------------------------------
 set count=0
 set ver=1.8
+set SN=%~nx0
 set wm=Multiple
 set channel=Stable
 set curdir=%~dp0Downloads\
 set data=%appdata%\SPOTYdl\
+set config=%data%\config.txt
+set store=%data%\store\
 ::---------------------------------------
 title SPOTYdl
 color 07
 ::---------------------------------------
+if not exist %store% (md %store%)
 if exist setup.bat (del setup.bat)
-if not exist %data% (md %data%)
+if not exist %data% (goto first_run) else (
+	if not exist %config% goto config_error
+	< %config% (
+  		set /p history=
+	)
+)
 if not exist Downloads (
 	md Downloads
 	echo.>>".\Downloads\Desktop.ini"
@@ -23,6 +32,9 @@ if not exist Downloads (
 	echo Mode=>>".\Downloads\Desktop.ini"
 	echo Vid=>>".\Downloads\Desktop.ini"
 	echo FolderType=Music>>".\Downloads\Desktop.ini"
+	attrib +S +H .\Downloads\Desktop.ini
+	attrib +R .\Downloads
+	start "C:\Windows\System32" ie4uinit.exe -show
 )
 if not "%~1"=="" (goto file_import)
 goto aoff
@@ -32,7 +44,7 @@ goto aoff
 title SPOTYdl
 if exist s.ver (del s.ver)
 if exist news.temp (del news.temp)
-mode con: cols=72 lines=20
+mode con: cols=72 lines=21
 color 07
 set of=
 cls
@@ -47,27 +59,29 @@ echo   3) flac                6) wav
 echo.
 echo  Other options:
 echo   a) Help                b) Toggle Working Mode
-echo   c) About               d) Version
+echo   c) List "Downloads"    d) Version
 echo   e) News                f) Changelog
-echo   g) List "Downloads"    h) Disclaimer
+echo   g) Disclaimer          h) About
+echo   i) Settings
 echo.
 echo  Input the value that corresponds to your choice.
 set /p of=^>^>
 if not defined of (goto aoffe)
-if "%of%"=="1" (set format="mp3" && goto set-link)
-if "%of%"=="2" (set format="m4a" && goto set-link)
-if "%of%"=="3" (set format="flac" && goto set-link)
-if "%of%"=="4" (set format="opus" && goto set-link)
-if "%of%"=="5" (set format="ogg" && goto set-link)
-if "%of%"=="6" (set format="wav" && goto set-link)
+if "%of%"=="1" (set format="mp3" && goto sstd)
+if "%of%"=="2" (set format="m4a" && goto sstd)
+if "%of%"=="3" (set format="flac" && goto sstd)
+if "%of%"=="4" (set format="opus" && goto sstd)
+if "%of%"=="5" (set format="ogg" && goto sstd)
+if "%of%"=="6" (set format="wav" && goto sstd)
 if "%of%"=="a" (set hlp=aoff && goto help)
 if "%of%"=="b" (if %wm%==Normal (set wm=Multiple&& goto aoff) else (set wm=Normal&& goto aoff))
-if "%of%"=="c" (set goto=aoff&&goto about)
+if "%of%"=="c" (goto list)
 if "%of%"=="d" (goto dvfs)
 if "%of%"=="e" (goto news)
 if "%of%"=="f" (goto changelog)
-if "%of%"=="g" (goto list)
-if "%of%"=="h" (goto disclaimer)
+if "%of%"=="g" (goto disclaimer)
+if "%of%"=="h" (goto about)
+if "%of%"=="i" (goto settings)
 if "%of%"=="hi" (echo  Hello and Welcome to SPOTYdl!&&timeout /t 5 >nul&&goto aoff)
 if "%of%"=="-wm" (set goto=aoff && goto set_working_mode)
 echo  Sorry, but the value you entered is invalid. Try again!
@@ -79,24 +93,22 @@ timeout /t 3 >nul
 goto aoff
 
 
-:set-link
+:sstd
 if exist s.ver (del s.ver)
 mode con: cols=69 lines=8
 set link=
 cls
 echo.
+echo   Now you gotta chose the song you wanna download.
 echo   Output format: %format%, to change it type "-b"
-echo   If you wanna download all songs listed on a txt file, use "-txt"
 echo.
 echo   Paste the link to a song/playlist or simply the song name!! :D
 set /p link=^>^>
 if "%link%"=="-b" goto aoff
-if "%link%"=="-wm" (set goto=set-link && goto set_working_mode)
-if "%link%"=="-txt" (goto multi)
-if not %count% EQU 7 (if not defined link goto blank_invalid) else (echo   DOODLE TIME!! && timeout /t 3 >nul && goto set-link)
-:download
+if "%link%"=="-wm" (set goto=sstd && goto set_working_mode)
+if not %count% EQU 7 (if not defined link goto blank_invalid) else (echo   DOODLE TIME!! && timeout /t 3 >nul && goto sstd)
 cls
-echo %link%>>history.txt
+if %history%==true (echo %link%>>history.txt)
 spotdl "%link%" --output-format %format% --output .\Downloads\
 if %errorlevel% == 0 goto clnup
 if %errorlevel% == 1 goto error1
@@ -106,47 +118,68 @@ goto spotDL_trouble
 set /a count=%count%+1
 echo   You can't leave this field in blank. Try again!
 timeout /t 3 >nul
-goto set-link
+goto sstd
 
 
-:multi
-mode con: cols=72 lines=15
+:file_import
+if not exist %~dp0Downloads\ (md %~dp0Downloads\)
+mode con: cols=80 lines=18
+set _flnm=%~n1
+set _ext=%~x1
+set txt=%~1
+set "err=0" ::if %errorlevel% EQU 0/1/2 (set /a err=%err%+1)
 cls
 echo.
-echo                      Multiple songs downloader mode
-echo.
-echo.
-echo   Now input the location to your text file.
-echo   Tip: drag and drop your file here to auto type it's location.
-echo   Tip: You can drag your txt file over this app's icon to start
-echo  the download process faster!
-echo   Note: To download all songs from artists, paste the spotify
-echo  artists' links in the text file and not the artists' name.
-echo.
-echo  To go back, use "-b"
-set /p txt=^>^>
-for /r %%a in ("%txt%") do (
-	if "%%~na"=="history" (
-		echo  You have to rename the history file to continue.
-		timeout /t 4 >nul
-		goto multi
-	)
+if not "%_ext%"==".txt" (
+	echo  You can only import a txt file.
+	echo  Rename your file, or import other one.
+	echo.
+	echo  Press any key to exit...
+	pause>nul
+	exit
 )
-if not defined txt goto ibtxt
-if %txt%==-b goto set-link
-for /F "usebackq tokens=*" %%A in (%txt%) do (
-	echo %%A>>history.txt
-	spotdl "%%A" --output-format %format% --output .\Downloads\
-	)
-if %errorlevel% == 0 goto clnup
-if %errorlevel% == 1 goto error1
-echo  This is yet bugged lol
-pause
-goto aoff
-:ibtxt
-echo   You can't leave this field blank. Try again!
-timeout /t 3 >nul
-goto multi
+if "%_flnm%%_ext%"=="history.txt" (
+	echo   You have to rename the history file to continue.
+	echo.
+	echo   If I didn't lock the use of the history file with it's
+	echo  original name, you would get into an infinite loop.
+	echo   Why? Cause SPOTYdl will be reading the history file,
+	echo  and adding new entries to it each time it tries to
+	echo  download a song, will create an infinite loop.
+	echo.
+	timeout /t 4 >nul
+	echo  Press any key to exit...
+	pause >nul
+	exit
+)
+echo  Imported file: "%_flnm%%_ext%"
+echo  Will download to %curdir%
+echo.
+echo  Chose an audio file format:
+echo   1) mp3                 4) opus
+echo   2) m4a		 5) ogg
+echo   3) flac		 6) wav
+set /p fiof=^>^> 
+if "%fiof%"=="1" (set format="mp3")
+if "%fiof%"=="2" (set format="m4a")
+if "%fiof%"=="3" (set format="flac")
+if "%fiof%"=="4" (set format="opus")
+if "%fiof%"=="5" (set format="ogg")
+if "%fiof%"=="6" (set format="wav")
+if not "%_flnm%" EQU "02_02_2022" (echo  Reading "%_flnm%" and downloading all listed songs on it.) else (echo Reading "Twosday" and downloading all listed songs on it.)
+echo.
+for /F "usebackq tokens=*" %%A in ("%txt%") do (
+	if %history%==true (echo %%A>>history.txt)
+	echo Date: %date%, Time: %time% >> %data%\output.txt
+	spotdl "%%A" --output-format %format% --output %curdir%
+)
+echo.
+echo  Done!
+echo  There were %err% songs that failed downloading.
+echo.
+echo  Press any key to exit...
+pause >nul
+exit
 
 
 :set_working_mode
@@ -208,19 +241,21 @@ if not "%sver%"=="%ver%" (
 )) else (
 	echo  1^) No connection
 )
-echo  2) Change update channel
-echo  3) Help
-echo  4) Go back
-echo  5) Reload server version
+echo  2) Downgrade
+echo  3) Change update channel
+echo  4) Help
+echo  5) Go back
+echo  6) Reload server version
 echo.
 echo  Input the number that corresponds to your choice. 
 set /p swm=^>^> 
 if not defined swm goto biv
 if "%swm%"=="1" (if %upd?%==yes (goto donw_and_inst) else (goto version))
-if "%swm%"=="2" (goto update_chnl)
-if "%swm%"=="3" (goto help_v)
-if "%swm%"=="4" (goto aoff)
-if "%swm%"=="5" (if %channel%==Stable (
+if "%swm%"=="2" (goto downgrade_menu)
+if "%swm%"=="3" (goto update_chnl)
+if "%swm%"=="4" (goto help_v)
+if "%swm%"=="5" (goto aoff)
+if "%swm%"=="6" (if %channel%==Stable (
 	if exist s.ver (del s.ver)
 	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver">nul
 	goto version
@@ -242,6 +277,7 @@ goto version
 cls
 echo  Downloading and installing the latest version of SPOTYdl.
 echo  Don't close this window.
+copy %SN% %store%\%ver%.sdv /y
 if %channel%==Stable (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/script.bat -Outfile SPOTYdl.temp" >nul) else (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bscript.bat -Outfile SPOTYdl.temp" >nul)
 if %errorlevel%==1 goto fail_github
 echo.
@@ -273,67 +309,6 @@ if "%chnl%"=="a" (set channel=Stable && goto donw_and_inst)
 if "%chnl%"=="b" (set channel=Beta && goto donw_and_inst)
 if "%chnl%"=="c" (goto version)
 if not defined chnl goto version
-
-
-:file_import
-if not exist %~dp0Downloads\ (md %~dp0Downloads\)
-mode con: cols=80 lines=18
-set _flnm=%~n1
-set _ext=%~x1
-set txt=%~1
-set "err=0" ::if %errorlevel% EQU 0/1/2 (set /a err=%err%+1)
-cls
-echo.
-if not "%_ext%"==".txt" (
-	echo  You can only import a txt file.
-	echo  Rename your file, or import other one.
-	echo.
-	echo  Press any key to exit...
-	pause>nul
-	exit
-)
-if "%_flnm%%_ext%"=="history.txt" (
-	echo   You have to rename the history file to continue.
-	echo.
-	echo   If I didn't lock the use of the history file with it's
-	echo  original name, you would get into an infinite loop.
-	echo   Why? Cause SPOTYdl will be reading the history file,
-	echo  and adding new entries to it each time it tries to
-	echo  download a song, will create an infinite loop.
-	echo.
-	timeout /t 4 >nul
-	echo  Press any key to exit...
-	pause >nul
-	exit
-)
-echo  Imported file: "%_flnm%%_ext%"
-echo  Will download to %curdir%
-echo.
-echo  Chose an audio file format:
-echo   1) mp3                 4) opus
-echo   2) m4a		 5) ogg
-echo   3) flac		 6) wav
-set /p fiof=^>^> 
-if "%fiof%"=="1" (set format="mp3")
-if "%fiof%"=="2" (set format="m4a")
-if "%fiof%"=="3" (set format="flac")
-if "%fiof%"=="4" (set format="opus")
-if "%fiof%"=="5" (set format="ogg")
-if "%fiof%"=="6" (set format="wav")
-if not "%_flnm%" EQU "02_02_2022" (echo  Reading "%_flnm%" and downloading all listed songs on it.) else (echo Reading "Twosday" and downloading all listed songs on it.)
-echo.
-for /F "usebackq tokens=*" %%A in ("%txt%") do (
-	echo %%A>>history.txt
-	echo Date: %date%, Time: %time% >> %data%\output.txt
-	spotdl "%%A" --output-format %format% --output %curdir%
-)
-echo.
-echo  Done!
-echo  There were %err% songs that failed downloading.
-echo.
-echo  Press any key to exit...
-pause >nul
-exit
 
 
 :news
@@ -399,7 +374,7 @@ powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -A
 echo.
 if %wm%==Normal (echo  Press any key to exit) else (echo  Press any key to continue)
 pause >nul
-if %wm%==Normal (exit) else (goto set-link)
+if %wm%==Normal (exit) else (goto sstd)
 
 
 :error1
@@ -407,7 +382,7 @@ cls
 echo  The music you tried to download was not found. Try again.
 powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Error; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your download failed...', [System.Windows.Forms.ToolTipIcon]::None)}">nul
 timeout /t 5 >nul
-goto set-link
+goto sstd
 
 
 :changelog
@@ -496,7 +471,7 @@ echo  by GabiBrawl, 21st march 2022
 echo.
 echo  Press any key to go back...
 pause>nul
-goto %goto%
+goto aoff
 
 
 :spotDL_trouble
@@ -513,3 +488,95 @@ echo.
 echo   Press any key to exit...
 pause >nul
 exit
+
+
+:first_run
+mode con: cols=56 lines=8
+cls
+echo.
+echo                   Welcome to SPOTYdl!
+echo   Seems like it's your first time running this app, so
+echo  you gotta do some configurations to continue.
+echo.
+echo   Press any key to start...
+pause >nul
+mode con: cols=56 lines=5
+cls
+echo.
+echo   Firstly, do you want us to create a history file to
+echo  store your downloads history? (y/n)
+echo.
+set /p history=^>^>
+if %history%==y (set hf=true) 
+if %history%==n (set hf=false)
+md %data%
+(
+	echo %hf%
+) >%config%
+cls
+echo.
+echo   Congrats! You have ended the configuration!
+echo.
+echo   Press any key to start using the app...
+pause >nul
+< %config% (
+	set /p history=
+)
+goto aoff
+
+
+:settings
+mode con: cols=66 lines=12
+cls
+echo.
+echo   Available tweakable settings:
+echo  1) History: %history%
+echo.
+echo   Other options:
+echo  a) Save changes ^& exit
+echo  b) Exit without saving changes.
+echo.
+set /p choice=^>^>
+if %choice%==1 (goto sh)
+if %choice%==a (goto ss)
+if %choice%==b (goto reload)
+echo   Invalid choice. Please try again!
+timeout /t 3 >nul
+goto settings
+
+:sh
+mode con: cols=49 lines=6
+cls
+echo.
+echo   Do you wanna activate the history file? (y/n)
+echo.
+set /p sh=^>^>
+if %sh%==y (set history=true && goto settings)
+if %sh%==n (set history=false && goto settings)
+echo   Invalid choice. Please try again!
+timeout /t 3 >nul
+goto sh
+
+:ss
+del %config% /f /q
+(
+	echo %history%
+) >%config%
+:reload
+< %config% (
+	set /p history=
+)
+goto aoff
+
+:config_error
+mode con: cols=46 lines=8
+cls
+echo.
+echo                -config ERROR-
+echo.
+echo   Seems like you updated to this version and
+echo  didn't run the initial configuration.
+echo.
+echo   Press any key to run the configuration...
+pause >nul
+goto first_run
