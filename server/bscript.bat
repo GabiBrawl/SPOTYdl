@@ -2,25 +2,20 @@
 ::---------------------------------------
 set count=0
 set ver=1.8
+set vcn=1_8
 set SN=%~nx0
 set wm=Multiple
-set channel=Stable
+set channel=Beta
 set curdir=%~dp0Downloads\
 set data=%appdata%\SPOTYdl\
-set config=%data%\config.txt
-set store=%data%\store\
+set config=%data%config.txt
+set store=%data%store
 ::---------------------------------------
 title SPOTYdl
 color 07
 ::---------------------------------------
 if not exist %store% (md %store%)
 if exist setup.bat (del setup.bat)
-if not exist %data% (goto first_run) else (
-	if not exist %config% goto config_error
-	< %config% (
-  		set /p history=
-	)
-)
 if not exist Downloads (
 	md Downloads
 	echo.>>".\Downloads\Desktop.ini"
@@ -35,6 +30,12 @@ if not exist Downloads (
 	attrib +S +H .\Downloads\Desktop.ini
 	attrib +R .\Downloads
 	start "C:\Windows\System32" ie4uinit.exe -show
+)
+if not exist %data% (goto first_run) else (
+	if not exist %config% goto config_error
+	< %config% (
+  		set /p history=
+	)
 )
 if not "%~1"=="" (goto file_import)
 goto aoff
@@ -67,12 +68,12 @@ echo.
 echo  Input the value that corresponds to your choice.
 set /p of=^>^>
 if not defined of (goto aoffe)
-if "%of%"=="1" (set format="mp3" && goto sstd)
-if "%of%"=="2" (set format="m4a" && goto sstd)
-if "%of%"=="3" (set format="flac" && goto sstd)
-if "%of%"=="4" (set format="opus" && goto sstd)
-if "%of%"=="5" (set format="ogg" && goto sstd)
-if "%of%"=="6" (set format="wav" && goto sstd)
+if "%of%"=="1" (set format=mp3&& goto sstd)
+if "%of%"=="2" (set format=m4a&& goto sstd)
+if "%of%"=="3" (set format=flac&& goto sstd)
+if "%of%"=="4" (set format=opus&& goto sstd)
+if "%of%"=="5" (set format=ogg&& goto sstd)
+if "%of%"=="6" (set format=wav&& goto sstd)
 if "%of%"=="a" (set hlp=aoff && goto help)
 if "%of%"=="b" (if %wm%==Normal (set wm=Multiple&& goto aoff) else (set wm=Normal&& goto aoff))
 if "%of%"=="c" (goto list)
@@ -100,7 +101,7 @@ set link=
 cls
 echo.
 echo   Now you gotta chose the song you wanna download.
-echo   Output format: %format%, to change it type "-b"
+echo   Output audio file format: %format%, to change it type -b
 echo.
 echo   Paste the link to a song/playlist or simply the song name!! :D
 set /p link=^>^>
@@ -215,7 +216,7 @@ if %channel%==Stable (
 
 
 :version
-mode con: cols=85 lines=15
+mode con: cols=85 lines=16
 set swm=
 set sver=no connection
 set upd?=yes
@@ -241,7 +242,9 @@ if not "%sver%"=="%ver%" (
 )) else (
 	echo  1^) No connection
 )
-echo  2) Downgrade
+
+for /f %%b in ('dir %store% ^| find "File(s)"') do (set vdb=%%b)
+if not %vdb%==0 (echo  2^) Downgrade) else (echo  2^) No downgradable versions available)
 echo  3) Change update channel
 echo  4) Help
 echo  5) Go back
@@ -251,7 +254,7 @@ echo  Input the number that corresponds to your choice.
 set /p swm=^>^> 
 if not defined swm goto biv
 if "%swm%"=="1" (if %upd?%==yes (goto donw_and_inst) else (goto version))
-if "%swm%"=="2" (goto downgrade_menu)
+if "%swm%"=="2" (if not %vdb%==0 (goto downgrade_menu) else (goto version))
 if "%swm%"=="3" (goto update_chnl)
 if "%swm%"=="4" (goto help_v)
 if "%swm%"=="5" (goto aoff)
@@ -277,10 +280,9 @@ goto version
 cls
 echo  Downloading and installing the latest version of SPOTYdl.
 echo  Don't close this window.
-copy %SN% %store%\%ver%.sdv /y
+copy %SN% %store%\%ver%.dsv /y >nul
 if %channel%==Stable (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/script.bat -Outfile SPOTYdl.temp" >nul) else (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bscript.bat -Outfile SPOTYdl.temp" >nul)
 if %errorlevel%==1 goto fail_github
-echo.
 echo @echo off>>.\setup.bat
 echo title Finishing up>>.\setup.bat
 echo del SPOTYdl.bat>>.\setup.bat
@@ -311,6 +313,48 @@ if "%chnl%"=="c" (goto version)
 if not defined chnl goto version
 
 
+:downgrade_menu
+set dc=
+for /f %%b in ('dir %store% ^| find "File(s)"') do (set dmva=%%b)
+if %dmva%==0 (goto no_available_downgrade_entries)
+set /a mcdm=%dmva%+11
+mode con: cols=60 lines=%mcdm%
+cls
+echo.
+echo                       -DOWNGRADE MENU-
+echo.
+echo  All available versions to downgrade to:
+for /R "%store%" %%A in (*) do (echo  -^> %%~nA)
+echo.
+echo  Input the codename of the version you wanna downgrade to.
+set /p dc=^>^> 
+if not exist %store%\%dc%.dsv goto nede
+copy %SN% %store%\%ver%.dsv /y >nul
+copy %store%\%dc%.dsv %cd%\sptdl.bat /y >nul
+echo @echo off>>.\setup.bat
+echo title Finishing up>>.\setup.bat
+echo del SPOTYdl.bat>>.\setup.bat
+echo ren sptdl.bat SPOTYdl.bat>>.\setup.bat
+echo start SPOTYdl.bat>>.\setup.bat
+echo exit>>.\setup.bat
+start setup.bat
+exit
+:nede
+echo  The codename of the version you chose doesn't exist.
+echo  Please try again...
+timeout /t 4 >nul
+goto downgrade_menu
+
+
+:no_available_downgrade_entries
+cls
+echo.
+echo  There ain't any available downgradable version.
+echo  Press any key to go back...
+pause >nul
+goto version
+
+
 :news
 title SPOTYdl - NEWS
 mode con: cols=66 lines=35
@@ -335,7 +379,6 @@ goto aoff
 mode con: cols=62 lines=6
 if exist .\Downloads\.spotdl-cache (del .\Downloads\.spotdl-cache >nul)
 if exist SongList.txt (goto overwrite)
-set lcount=0
 cls
 echo.
 echo  We're listing all your downloaded songs into SongList.txt
@@ -379,7 +422,8 @@ if %wm%==Normal (exit) else (goto sstd)
 
 :error1
 cls
-echo  The music you tried to download was not found. Try again.
+echo  The song/playlist you tried to download failed.
+echo  Please try again later...
 powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Error; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your download failed...', [System.Windows.Forms.ToolTipIcon]::None)}">nul
 timeout /t 5 >nul
 goto sstd
@@ -529,18 +573,18 @@ goto aoff
 mode con: cols=66 lines=12
 cls
 echo.
-echo   Available tweakable settings:
-echo  1) History: %history%
+echo  Available tweakable settings:
+echo   1) History: %history%
 echo.
-echo   Other options:
-echo  a) Save changes ^& exit
-echo  b) Exit without saving changes.
+echo  Other options:
+echo   a) Save changes ^& exit
+echo   b) Exit without saving changes.
 echo.
 set /p choice=^>^>
 if %choice%==1 (goto sh)
 if %choice%==a (goto ss)
 if %choice%==b (goto reload)
-echo   Invalid choice. Please try again!
+echo  Invalid choice. Please try again!
 timeout /t 3 >nul
 goto settings
 
