@@ -197,12 +197,18 @@ exit
 mode con: cols=80 lines=18
 cls
 echo.
-echo  Fetching and resuming all incomplete downloads...
+echo  Fetching and resuming all incompleted downloads...
+for /f %%r in ('dir %store% ^| find "File(s)"') do (set ristf=%%r)
 for /R ".\Downloads\" %%r in (*) do (if %%~xr==.spotdlTrackingFile (spotdl "%%~r" --output %curdir%))
-del ".\Downloads\.spotdl-cache" >nul
 echo.
-echo  All incomplete songs were successfuly downloaded!
-echo  Press any key to go back...
+if not %ristf%==0 (
+	echo  All downloads were successfuly resumed!
+	echo  Press any key to go back...
+	del ".\Downloads\.spotdl-cache" >nul
+	) else (
+		echo  No downloads to resume.
+		echo  Press any key to go back...
+	)
 pause >nul
 goto aoff
 
