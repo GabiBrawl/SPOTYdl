@@ -8,12 +8,14 @@ set channel=Beta
 set curdir=%~dp0Downloads\
 set data=%appdata%\SPOTYdl\
 set config=%data%config.txt
-set store=%data%store
+set store=%data%store\
+set temp=%data%temp\
 ::---------------------------------------
 title SPOTYdl
 color 07
 ::---------------------------------------
 if not exist %store% (md %store%)
+if not exist %temp% (md %temp%)
 if exist %~dp0setup.bat (del %~dp0setup.bat)
 if not exist %~dp0Downloads (
 	md %~dp0Downloads
@@ -34,6 +36,7 @@ if not exist %data% (goto first_run) else (
 	if not exist %config% goto config_error
 	< %config% (
   		set /p history=
+  		set /p wm=
 	)
 )
 if not "%~1"=="" (goto file_import)
@@ -42,14 +45,14 @@ goto aoff
 
 :aoff ::audio output file format
 title SPOTYdl
-if exist s.ver (del s.ver)
-if exist news.temp (del news.temp)
+if exist %temp%s.ver (del %temp%s.ver)
+if exist %temp%news.temp (del %temp%news.temp)
 mode con: cols=72 lines=21
 color 07
 set of=
 cls
 echo.
-echo  Working mode: %wm%; for detailed info type "-wm"
+echo                                -SPOTYdl-
 echo.
 echo.
 echo  Available audio file formats:
@@ -58,8 +61,8 @@ echo   2) m4a                 5) ogg
 echo   3) flac                6) wav
 echo.
 echo  Other options:
-echo   a) Help                b) Toggle Working Mode
-echo   c) List "Downloads"    d) Resume stopped downloads
+echo   a) Help                b) Toggle Working Mode: %wm%
+echo   c) List "Downloads"    d) Resume downloads
 echo   e) News                f) Changelog
 echo   g) Disclaimer          h) About
 echo   i) Settings            j) Version
@@ -96,9 +99,12 @@ goto aoff
 
 :sstd
 if exist s.ver (del s.ver)
-mode con: cols=69 lines=8
+mode con: cols=66 lines=11
 set link=
 cls
+echo.
+echo                          -Search Song-
+echo.
 echo.
 echo   Now you gotta chose the song you wanna download.
 echo   Output audio file format: %format%, to change it type -b
@@ -124,7 +130,7 @@ goto sstd
 
 :file_import
 if not exist %~dp0Downloads\ (md %~dp0Downloads\)
-mode con: cols=80 lines=18
+mode con: cols=80 lines=22
 set _flnm=%~n1
 set _ext=%~x1
 set imported=%~1
@@ -142,8 +148,10 @@ if "%_ext%"==".spotdlTrackingFile" (
 	exit
 )
 if not "%_ext%"==".txt" (
-	echo  You can only import a txt file.
-	echo  Rename your file, or import other one.
+	mode con: cols=40 lines=6
+	echo.
+	echo  The imported file type is unsupported.
+	echo  Rename your file, or pick another one.
 	echo.
 	echo  Press any key to exit...
 	pause>nul
@@ -163,6 +171,9 @@ if "%_flnm%%_ext%"=="history.txt" (
 	pause >nul
 	exit
 )
+echo                                -File Importer-
+echo.
+echo.
 echo  Imported file: "%_flnm%%_ext%"
 echo  Will download to %curdir%
 echo.
@@ -170,6 +181,8 @@ echo  Chose an audio file format:
 echo   1) mp3                 4) opus
 echo   2) m4a		 5) ogg
 echo   3) flac		 6) wav
+echo.
+echo  Input the value that corresponds to your choice.
 set /p fiof=^>^> 
 if "%fiof%"=="1" (set format="mp3")
 if "%fiof%"=="2" (set format="m4a")
@@ -206,7 +219,7 @@ if not %ristf%==0 (
 	echo  Press any key to go back...
 	del ".\Downloads\.spotdl-cache" >nul
 	) else (
-		echo  No downloads to resume.
+		echo  No resumable downloads available.
 		echo  Press any key to go back...
 	)
 pause >nul
@@ -234,23 +247,26 @@ goto set_working_mode
 
 
 :dvfs
-if exist s.ver (del s.ver)
+if exist %temp%s.ver (del %temp%s.ver)
 if %channel%==Stable (
-	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver">nul
+	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile %temp%s.ver">nul
 ) else (
-	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile s.ver">nul
+	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile %temp%s.ver">nul
 )
 goto version
 
 
 :version
-mode con: cols=85 lines=16
+mode con: cols=51 lines=19
 set swm=
 set sver=no connection
 set upd?=yes
-set /p sver=<s.ver
+set /p sver=<%temp%s.ver
 cls
-echo       -Version menu-
+echo.
+echo                   -Version menu-
+echo.
+echo.
 echo  Installed Version: %ver%
 echo  Server Version: %sver%
 echo  Update channel: %channel%
@@ -260,23 +276,23 @@ echo.
 if not "%sver%"=="no connection" (
 if not "%sver%"=="%ver%" (
 	if not "%ver%" GTR "%sver%" (
-		echo  1^) Install updates
+		echo   1^) Install updates
 ) else (
 	set upd?=no
-	echo  1^) You traveled thru time to get this version bro
+	echo   1^) Stop using leaked builds
 )
 ) else (
-	echo  1^) Reinstall SPOTYdl
+	echo   1^) Reinstall SPOTYdl
 )) else (
-	echo  1^) No connection
+	echo   1^) No connection
 )
 
 for /f %%b in ('dir %store% ^| find "File(s)"') do (set vdb=%%b)
-if not %vdb%==0 (echo  2^) Downgrade) else (echo  2^) No downgradable versions available)
-echo  3) Change update channel
-echo  4) Help
-echo  5) Go back
-echo  6) Reload server version
+if not %vdb%==0 (echo   2^) Downgrade) else (echo   2^) No downgradable versions available)
+echo   3) Change update channel
+echo   4) Help
+echo   5) Go back
+echo   6) Reload server version
 echo.
 echo  Input the number that corresponds to your choice. 
 set /p swm=^>^> 
@@ -286,11 +302,15 @@ if "%swm%"=="2" (if not %vdb%==0 (goto downgrade_menu) else (goto version))
 if "%swm%"=="3" (goto update_chnl)
 if "%swm%"=="4" (goto help_v)
 if "%swm%"=="5" (goto aoff)
-if "%swm%"=="6" (if exist s.ver (del s.ver) && if %channel%==Stable (
-	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile s.ver">nul
+if "%swm%"=="6" (
+	del %temp%s.ver
+	if %channel%==Stable (
+	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile %temp%s.ver" >nul
+	goto version	
 ) else (
-	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile s.ver">nul
-)goto version)
+	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile %temp%s.ver" >nul
+	goto version
+))
 echo  The value you entered is invalid. Try again!
 timeout /t 3 >nul
 goto version
@@ -305,13 +325,14 @@ cls
 echo
 echo  Downloading and installing the latest version of SPOTYdl.
 echo  DON'T CLOSE THIS WINDOW
-copy %SN% %store%\%ver%.dsv /y >nul
-if %channel%==Stable (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/script.bat -Outfile SPOTYdl.temp" >nul) else (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bscript.bat -Outfile SPOTYdl.temp" >nul)
+copy %SN% %store%%ver%.dsv /y >nul
+if %channel%==Stable (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/script.bat -Outfile %temp%SPOTYdl.temp" >nul) else (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bscript.bat -Outfile %temp%SPOTYdl.temp" >nul)
 if %errorlevel%==1 goto fail_github
 echo @echo off>>.\setup.bat
 echo title Finishing up>>.\setup.bat
 echo del SPOTYdl.bat>>.\setup.bat
-echo ren SPOTYdl.temp SPOTYdl.bat>>.\setup.bat
+echo ren %temp%SPOTYdl.temp %temp%SPOTYdl.bat>>.\setup.bat
+echo copy %temp%SPOTYdl.bat ^%^~dp0>>.\setup.bat
 echo start SPOTYdl.bat>>.\setup.bat
 echo exit>>.\setup.bat
 start setup.bat
@@ -353,9 +374,9 @@ for /R "%store%" %%A in (*) do (echo  -^> %%~nA)
 echo.
 echo  Input the codename of the version you wanna downgrade to.
 set /p dc=^>^> 
-if not exist %store%\%dc%.dsv goto nede
-copy %SN% %store%\%ver%.dsv /y >nul
-copy %store%\%dc%.dsv %cd%\sptdl.bat /y >nul
+if not exist %store%%dc%.dsv goto nede
+copy %SN% %store%%ver%.dsv /y >nul
+copy %store%%dc%.dsv %cd%\sptdl.bat /y >nul
 echo @echo off>>.\setup.bat
 echo title Finishing up>>.\setup.bat
 echo del SPOTYdl.bat>>.\setup.bat
@@ -374,7 +395,7 @@ goto downgrade_menu
 :no_available_downgrade_entries
 cls
 echo.
-echo  There ain't any available downgradable version.
+echo  There ain't available any downgradable versions.
 echo.
 echo  This menu will be available as soon as you update.
 echo  Press any key to go back...
@@ -386,14 +407,14 @@ goto version
 title SPOTYdl - NEWS
 mode con: cols=66 lines=35
 color 4e
-if exist news.temp (del news.temp)
-powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/news.temp -Outfile news.temp" >nul
+if exist %temp%news.temp (del %temp%news.temp)
+powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/news.temp -Outfile %temp%news.temp" >nul
 if %errorlevel%==1 goto fail_github
 :news_read
-if not exist news.temp goto fail_github
+if not exist %temp%news.temp goto fail_github
 cls
-echo  ------------------------------NEWS------------------------------
-type news.temp |More
+echo                               -NEWS-                             
+type %temp%news.temp |More
 echo.
 echo.
 echo       Congrats! You've read all available news for today!
@@ -417,8 +438,9 @@ echo  Press any key to go back to the main menu...
 pause >nul
 goto aoff
 :overwrite
-mode con: cols=33 lines=4
+mode con: cols=33 lines=5
 cls
+echo.
 echo             -ERROR-
 echo  "SongList.txt" already exists.
 echo         Overwrite? (y/n)
@@ -527,7 +549,8 @@ goto version
 mode con: cols=102 lines=20
 cls
 echo.
-echo                                           ---About---
+echo                                             ---About---
+echo.
 echo.
 echo  I'm sure of us had already searched about how to download spotify songs without having to buy the
 echo  "Premium" they offer us. So, I searched about that, and I found spotDL, a project that helps people
@@ -599,18 +622,23 @@ goto aoff
 
 
 :settings
-mode con: cols=66 lines=12
+mode con: cols=53 lines=14
 cls
 echo.
+echo                       -Settings-
+echo.
+echo.
 echo  Available tweakable settings:
-echo   1) History: %history%
+echo   1) History: %history%       2) Working mode: %wm%
 echo.
 echo  Other options:
 echo   a) Save changes ^& exit
 echo   b) Exit without saving changes.
 echo.
+echo  Input the value that corresponds to your choice
 set /p choice=^>^> 
 if %choice%==1 (goto sh)
+if %choice%==2 (goto swm)
 if %choice%==a (goto ss)
 if %choice%==b (goto reload)
 echo  Invalid choice. Please try again!
@@ -631,14 +659,30 @@ echo   Invalid choice. Please try again!
 timeout /t 3 >nul
 goto sh
 
+:swm
+mode con: cols=34 lines=6
+cls
+echo.
+echo            Working mode:
+echo        1=Normal, 2=Multiple
+echo.
+set /p sh=^>^> 
+if %sh%==1 (set wm=Normal&& goto settings)
+if %sh%==2 (set wm=Multiple&& goto settings)
+echo   Invalid choice. Please try again!
+timeout /t 3 >nul
+goto sh
+
 :ss
 del %config% /f /q
 (
 	echo %history%
+	echo %wm%
 ) >%config%
 :reload
 < %config% (
 	set /p history=
+	set /p wm=
 )
 goto aoff
 
