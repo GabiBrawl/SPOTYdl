@@ -96,7 +96,7 @@ ______________________________V1.7.1______________________________ 08/04/2022
 * Corrected some errors at the changelog.
 
 
-_______________________________V1.8_______________________________ XX/04/2022
+_______________________________V1.8_______________________________ 18/04/2022
 * [SETUP] the cleanup file is now ready for use.
 * [SETUP] the main setup file is now ready for use.
 * Now the downloads folder will be created with the downloads icon, and will be set as a music folder.
