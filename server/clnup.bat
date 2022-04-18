@@ -5,57 +5,63 @@ mode con: cols=70 lines=15
 
 
 :confirmation
-echo You're going to delete all the setup files.
-echo.
+echo  You're going to PERMANENTLY delete all the setup files.
+echo  Continue?
 set /p confirm=y/n^>
 if %confirm%==y goto c1
 if %confirm%==n goto failure
 
 
 :c1
-echo Would you like o delete the python and ffmpeg setups too?
 echo.
+echo  Would you like to delete python and ffmpeg setup files too?
 set /p confirm=y/n^>
 if %confirm%==y goto cleanups
 if %confirm%==n goto cleanup
 
 
 :cleanup
-echo Cleaning up your system...
-del "SPOTYdl - SETUP.bat" /y
-del 7z /y
-del pathed /y
-del "bitsadmin.exe" /y
-del ClnUp.bat /y
+echo  Cleaning up your system...
+del "SPOTYdl - SETUP.bat" /f /q
+del 7z /f /q
+del pathed /f /q
+del "bitsadmin.exe" /f /q
+del ClnUp.bat /f /q
 goto success
 
 
 :cleanups
-echo Cleaning up your system...
-del "SPOTYdl - SETUP.bat" /y
-del 7z /y
-del pathed /y
-del "bitsadmin.exe" /y
-del "ffmpeg-n5.0-latest-win64-gpl-5.0.zip" /y
-del "python-3.10.2-amd64.exe" /y
-del ClnUp.bat /y
-goto success
+echo  Cleaning up your system...
+del "SPOTYdl - SETUP.bat" /f /q
+del 7z /f /q
+rd 7z
+del pathed /f /q
+rd pathed
+del "bitsadmin.exe" /f /q
+del "ffmpeg-n5.0-latest-win64-gpl-5.0.zip" /f /q
+del "python.exe" /f /q
+start SPOTYdl.bat
+del ClnUp.bat /f /q
+exit
+
 
 :failure
 cls
-echo Cleanup not done.
-echo by GabiBrawl
+echo  Cleanup not done.
+echo  by GabiBrawl
 echo.
-echo Press any key to exit...
+echo  Press any key to exit...
 pause >nul
+exit
 
 
-:success
+::success
 cls
-echo Your system is now cleared up!
-echo Now you can start downloading your spotify music!
-echo by GabiBrawl
+echo  Your system is now cleared up!
+echo  Now you can start downloading your spotify music!
+echo  by GabiBrawl
 echo.
-echo Press any key to launch the downloader.
+echo  Press any key to exit and launch SPOTYdl...
 pause >nul
 start SPOTYdl.bat
+exit
