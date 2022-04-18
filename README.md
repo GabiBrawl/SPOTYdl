@@ -23,7 +23,7 @@ How to import? Just drag and drop your file over the program's icon!!
 
 <img src="https://user-images.githubusercontent.com/85069997/163463744-6f12d9f9-49b5-49ce-86f4-a2ef63043359.gif" width="480" height="270">
 
-# Resume
+# Resume downloads!
 Got a download interrupted for any reason? Resume it now!
 
 ![ezgif-2-59759e4723](https://user-images.githubusercontent.com/85069997/163818183-3edbc12a-6c6c-4d0a-86dd-95056d8824ea.gif)
