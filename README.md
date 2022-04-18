@@ -23,6 +23,11 @@ How to import? Just drag and drop your file over the program's icon!!
 
 <img src="https://user-images.githubusercontent.com/85069997/163463744-6f12d9f9-49b5-49ce-86f4-a2ef63043359.gif" width="480" height="270">
 
+# Resume
+Got a download interrupted for any reason? Resume it now!
+
+![ezgif-2-59759e4723](https://user-images.githubusercontent.com/85069997/163818183-3edbc12a-6c6c-4d0a-86dd-95056d8824ea.gif)
+
 ### Updates
 You don't need to come back here everytime you wanna check for updates... there's a specified menu for that!
 ![Screenshot (381)](https://user-images.githubusercontent.com/85069997/163431946-9836a417-53b6-4cb0-b701-8408fea4e3cf.png)
@@ -33,9 +38,19 @@ There are two update channels: the Stable and the Beta.
 
 So why don't I use only the beta you may ask, the Beta is more buggy than the Stable version... So if you wanna use this program daily, I suggest you the Stable channel. If you wanna be the first to try new features, chose the Beta!1!
 
+### Swap versions
+Didn't like the new version? Don't wait and roll back!
+
+![Screenshot (460)](https://user-images.githubusercontent.com/85069997/163814898-39ab48eb-6448-46ab-a933-ef0af4903b67.png)
+
+### Settings
+Wanna disable a feature? You've got a settings menu for that!
+
+![Screenshot (457)](https://user-images.githubusercontent.com/85069997/163815077-b0f64fef-0dc1-4a08-a8a3-60a1ce1682a8.png)
+
 
 ### Help
-All and every section has all the necessary help to guide any user thru the usage.
+All and every section have all the necessary help to guide any user thru the usage.
 
 ![Screenshot (383)](https://user-images.githubusercontent.com/85069997/163458730-75ab650a-0606-493d-b64c-5f7a74052916.png)
 ![Screenshot (385)](https://user-images.githubusercontent.com/85069997/163458874-095b0c42-1391-4939-bc5e-9c15c4b98cd7.png)
