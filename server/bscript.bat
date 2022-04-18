@@ -47,12 +47,12 @@ goto aoff
 title SPOTYdl
 if exist %temp%s.ver (del %temp%s.ver)
 if exist %temp%news.temp (del %temp%news.temp)
-mode con: cols=72 lines=21
+mode con: cols=72 lines=20
 color 07
 set of=
 cls
 echo.
-echo                                -SPOTYdl-
+echo                              -SPOTYdl v%ver%-
 echo.
 echo.
 echo  Available audio file formats:
@@ -64,8 +64,8 @@ echo  Other options:
 echo   a) Help                b) Toggle Working Mode: %wm%
 echo   c) List "Downloads"    d) Resume downloads
 echo   e) News                f) Changelog
-echo   g) Disclaimer          h) About
-echo   i) Settings            j) Version
+echo   g) Settings            h) Version
+echo   i) Disclaimer          j) About
 echo.
 echo  Input the value that corresponds to your choice.
 set /p of=^>^> 
@@ -82,10 +82,10 @@ if "%of%"=="c" (goto list)
 if "%of%"=="d" (goto resume_sds)
 if "%of%"=="e" (goto news)
 if "%of%"=="f" (goto changelog)
-if "%of%"=="g" (goto disclaimer)
-if "%of%"=="h" (goto about)
-if "%of%"=="i" (goto settings)
-if "%of%"=="j" (goto dvfs)
+if "%of%"=="g" (goto stings)
+if "%of%"=="h" (goto dvfs)
+if "%of%"=="i" (goto disclaimer)
+if "%of%"=="j" (goto about)
 if "%of%"=="hi" (echo  Hello and Welcome to SPOTYdl!&&timeout /t 5 >nul&&goto aoff)
 if "%of%"=="-wm" (set goto=aoff && goto set_working_mode)
 echo  Sorry, but the value you entered is invalid. Try again!
@@ -160,11 +160,11 @@ if not "%_ext%"==".txt" (
 if "%_flnm%%_ext%"=="history.txt" (
 	echo   You have to rename the history file to continue.
 	echo.
-	echo   If I didn't lock the use of the history file with it's
-	echo  original name, you would get into an infinite loop.
-	echo   Why? Cause SPOTYdl will be reading the history file,
-	echo  and adding new entries to it each time it tries to
-	echo  download a song, will create an infinite loop.
+	echo   If I wouldn't lock the use of the history file with
+	echo  it's name, you would get into an infinite loop.
+	echo   Why? Cause SPOTYdl reads the history file, and
+	echo  will add new entries to it each time it downloads
+	echo  a song.
 	echo.
 	timeout /t 4 >nul
 	echo  Press any key to exit...
@@ -207,15 +207,20 @@ exit
 
 
 :resume_sds
+set ristf=0
 mode con: cols=80 lines=18
 cls
 echo.
 echo  Fetching and resuming all incompleted downloads...
-for /f %%r in ('dir %store% ^| find "File(s)"') do (set ristf=%%r)
-for /R ".\Downloads\" %%r in (*) do (if %%~xr==.spotdlTrackingFile (spotdl "%%~r" --output %curdir%))
+for /R ".\Downloads\" %%r in (*) do (
+	if %%~xr==.spotdlTrackingFile (
+		spotdl "%%~r" --output %curdir%
+		set /a ristf=%ristf%+1
+	)
+)
 echo.
 if not %ristf%==0 (
-	echo  All downloads were successfuly resumed!
+	echo  All incomplete downloads were successfuly resumed!
 	echo  Press any key to go back...
 	del ".\Downloads\.spotdl-cache" >nul
 	) else (
@@ -288,7 +293,11 @@ if not "%sver%"=="%ver%" (
 )
 
 for /f %%b in ('dir %store% ^| find "File(s)"') do (set vdb=%%b)
-if not %vdb%==0 (echo   2^) Downgrade) else (echo   2^) No downgradable versions available)
+if not %vdb%==0 (
+	echo   2^) Swap versions
+) else (
+	echo   2^) No swap versions available
+)
 echo   3) Change update channel
 echo   4) Help
 echo   5) Go back
@@ -298,8 +307,8 @@ echo  Input the number that corresponds to your choice.
 set /p swm=^>^> 
 if not defined swm goto biv
 if "%swm%"=="1" (if %upd?%==yes (goto donw_and_inst) else (goto version))
-if "%swm%"=="2" (if not %vdb%==0 (goto downgrade_menu) else (goto version))
-if "%swm%"=="3" (goto update_chnl)
+if "%swm%"=="2" (if not %vdb%==0 (goto downgrade_menu) else (goto no_available_downgrade_entries))
+if "%swm%"=="3" (if %upd?%==yes (goto update_chnl) else (goto version))
 if "%swm%"=="4" (goto help_v)
 if "%swm%"=="5" (goto aoff)
 if "%swm%"=="6" (
@@ -322,17 +331,16 @@ goto version
 
 :donw_and_inst
 cls
-echo
-echo  Downloading and installing the latest version of SPOTYdl.
+echo.
+echo  Downloading and installing the latest version.
 echo  DON'T CLOSE THIS WINDOW
 copy %SN% %store%%ver%.dsv /y >nul
-if %channel%==Stable (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/script.bat -Outfile %temp%SPOTYdl.temp" >nul) else (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bscript.bat -Outfile %temp%SPOTYdl.temp" >nul)
+if %channel%==Stable (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/script.bat -Outfile %temp%SPOTYdl.bat" >nul) else (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bscript.bat -Outfile %temp%SPOTYdl.bat" >nul)
 if %errorlevel%==1 goto fail_github
 echo @echo off>>.\setup.bat
 echo title Finishing up>>.\setup.bat
 echo del SPOTYdl.bat>>.\setup.bat
-echo ren %temp%SPOTYdl.temp %temp%SPOTYdl.bat>>.\setup.bat
-echo copy %temp%SPOTYdl.bat ^%^~dp0>>.\setup.bat
+echo copy %temp%SPOTYdl.bat %%~dp0>>.\setup.bat
 echo start SPOTYdl.bat>>.\setup.bat
 echo exit>>.\setup.bat
 start setup.bat
@@ -363,14 +371,15 @@ if not defined chnl goto version
 set dc=
 for /f %%b in ('dir %store% ^| find "File(s)"') do (set dmva=%%b)
 if %dmva%==0 (goto no_available_downgrade_entries)
-set /a mcdm=%dmva%+11
+set /a mcdm=%dmva%+12
 mode con: cols=60 lines=%mcdm%
 cls
 echo.
-echo                       -DOWNGRADE MENU-
+echo                         -SWAP MENU-
 echo.
-echo  All available versions to downgrade to:
-for /R "%store%" %%A in (*) do (echo  -^> %%~nA)
+echo.
+echo  All available swap versions: (current v%ver%)
+for /R "%store%" %%A in (*) do (echo   -^> %%~nA ^(%%~zA bytes^))
 echo.
 echo  Input the codename of the version you wanna downgrade to.
 set /p dc=^>^> 
@@ -378,7 +387,7 @@ if not exist %store%%dc%.dsv goto nede
 copy %SN% %store%%ver%.dsv /y >nul
 copy %store%%dc%.dsv %cd%\sptdl.bat /y >nul
 echo @echo off>>.\setup.bat
-echo title Finishing up>>.\setup.bat
+echo title Swapping between versions>>.\setup.bat
 echo del SPOTYdl.bat>>.\setup.bat
 echo ren sptdl.bat SPOTYdl.bat>>.\setup.bat
 echo start SPOTYdl.bat>>.\setup.bat
@@ -393,11 +402,12 @@ goto downgrade_menu
 
 
 :no_available_downgrade_entries
+mode con: cols=51 lines=6
 cls
 echo.
-echo  There ain't available any downgradable versions.
+echo  There ain't any swap versions available.
 echo.
-echo  This menu will be available as soon as you update.
+echo  This menu will be unlocked as soon as you update.
 echo  Press any key to go back...
 pause >nul
 goto version
@@ -608,6 +618,7 @@ if %history%==n (set hf=false)
 md %data%
 (
 	echo %hf%
+	echo %wm%
 ) >%config%
 cls
 echo.
@@ -621,7 +632,7 @@ pause >nul
 goto aoff
 
 
-:settings
+:stings
 mode con: cols=53 lines=14
 cls
 echo.
@@ -643,18 +654,25 @@ if %choice%==a (goto ss)
 if %choice%==b (goto reload)
 echo  Invalid choice. Please try again!
 timeout /t 3 >nul
-goto settings
+goto stings
 
 :sh
-mode con: cols=34 lines=6
+mode con: cols=36 lines=9
+set sh=
 cls
 echo.
-echo   Enable the history file? (y/n)
-echo          y=true, n=false
+echo    Enable the history file? (y/n)
+echo           y=true, n=false
 echo.
 set /p sh=^>^> 
-if %sh%==y (set history=true&& goto settings)
-if %sh%==n (set history=false&& goto settings)
+if %sh%==y (
+	set history=true
+	goto stings
+)
+if %sh%==n (
+	set history=false
+	goto stings
+)
 echo   Invalid choice. Please try again!
 timeout /t 3 >nul
 goto sh
@@ -667,8 +685,14 @@ echo            Working mode:
 echo        1=Normal, 2=Multiple
 echo.
 set /p sh=^>^> 
-if %sh%==1 (set wm=Normal&& goto settings)
-if %sh%==2 (set wm=Multiple&& goto settings)
+if "%sh%"=="1" (
+	set wm=Normal
+	goto stings
+)
+if "%sh%"=="2" (
+	set wm=Multiple
+	goto stings
+)
 echo   Invalid choice. Please try again!
 timeout /t 3 >nul
 goto sh
