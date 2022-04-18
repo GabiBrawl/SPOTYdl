@@ -63,10 +63,10 @@ _______________________________V1.6_______________________________ 02/04/2022
    * If you're running the same version as the server, it will display a choice to reinstall and not the choice to install updates.
    * Public caption changed to Stable.
    * If you're offline, the install/reinstall option (option number 1 in the main screen) was changed to "No connection"
-* Repaired a bug in the main menu, in where if you inputed a wrong value, it would break the program.
+* Repaired a bug in the main menu, in where if you imputed a wrong value, it would break the program.
 * Now if you leave any text input blank, SPOTYdl will prompt you to try again.
-* From now on, the updates won't be published on the releases section. There'll be only the setup file (all the existing ones are going to be removed and improved versions will be published soon). SPOTYdl will be updated thru the server. Go to the main menu to update.
-* Added changelog download option in the main menu. Now the changelog will be finnaly public!
+* From now on, the updates won't be published on the releases section. There'll be available only the setup file (all the existing ones are going to be removed and improved versions will be published soon). SPOTYdl will be updated thru the server. Go to the main menu to update.
+* Added changelog download option in the main menu. Now the changelog will be finally public!
 * Corrected a bug when downloading a song, in where each separated word would be seen as a separated song.
    * Corrected the same bug in the txt importing mode
 * Created a system that will delete all temporary files that were created by spotDL, cleaning up the Downloads folder (:
@@ -92,5 +92,37 @@ _______________________________V1.7_______________________________ 08/04/2022
 
 
 ______________________________V1.7.1______________________________ 08/04/2022
-* Corrected a big bug at the main menu: even if you inputed a value, it would inform you to not leave the field in blank.
-* Corrected some errors in the changelog.
+* Corrected a big bug at the main menu: even if you input a value, it would inform you to not leave the field in blank.
+* Corrected some errors at the changelog.
+
+
+_______________________________V1.8_______________________________ XX/04/2022
+* [SETUP] the cleanup file is now ready for use.
+* [SETUP] the main setup file is now ready for use.
+* Now the downloads folder will be created with the downloads icon, and will be set as a music folder.
+* Corrected a bug at the update channel changer.
+* Corrected a bug when drag and dropping a file over the app.
+* Added some captions with some explanation to the file importing screen.
+* Updated some captions.
+* Corrected many design inconsistencies in the app.
+* Optimized all code related to updates.
+* Removed working mode from the song input menu.
+* Organized the text of tips and notes at the multiple song downloader menu.
+* Upgraded the security (complete lockage of importing a file named history) at the multiple songs download menu.
+* Corrected a bug at the Downloads Song Lister that would input a "Echo is off" line at the exported file.
+* Corrected the help files...
+* New feature "List downloaded". It will make a list of all your downloaded songs stored at the Downloads folder to SongList.txt. The txt file can be later imported to SPOTYdl to download your songs back again.
+* Created the disclaimer text.
+* Corrected a glitch at the downloaded songs list creator, that would add a blank space at each entry...
+* Corrected a bug with the Downloads folder styling, that sometimes wouldn't style correctly.
+* Removed the -txt command at the song search menu. Deprecated feature, but available when drag and dropping.
+* Created an initial setup system, that will permit you to activate or deactivate the history file. (more settings will be added soon)
+* Created a system that will allow you to swap between versions of SPOTYdl!! From now on, each time you upgrade SPOTYdl, a copy of the current version will be stored, so you can swap at anytime, even WITHOUT internet!! (you must upgrade with internet. Only then the version will appear on the swap menu, inside the versions menu)
+* Changed the success and failure captions when downloading a song
+* Other minor changes
+* Added a feature in the main menu that will let you resume all downloads that got interrupted by any reason.
+* You can now import spotDL tracking files too! (ability to resume any incomplete song)
+* Repaired a bug that would create a "Downloads" folder in the location of the imported file
+* The resume feature at the main menu now checks if exists any file to resume. If there's no file, won't even try to resume.
+* New setting: working modes can now be defined per user!
+* Temporary files now get created into the AppData!
