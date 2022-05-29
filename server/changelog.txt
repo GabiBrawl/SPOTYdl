@@ -12,11 +12,13 @@ _______________________________V1.0_______________________________ 27/02/2022
 
 _______________________________V1.1_______________________________ 27/02/2022
 * Removed a tiny bug in the setup :D
+* No changes to the main app.
 
 
 _______________________________V1.2_______________________________ 28/02/2022
 * [SETUP] Changed the UAC prompt: now it only asks for permissions after downloading all required files.
 * [SETUP] Updated the clnup.bat server file.
+* No changes to the main app.
 
 
 ______________________________V1.3.0______________________________ 04/03/2022
@@ -126,3 +128,34 @@ _______________________________V1.8_______________________________ 18/04/2022
 * The resume feature at the main menu now checks if exists any file to resume. If there's no file, won't even try to resume.
 * New setting: working modes can now be defined per user!
 * Temporary files now get created into the AppData!
+
+
+_______________________________V1.9_______________________________ 29/05/2022
+* Corrected many design inconsistencies.
+* Updated some captions.
+   * Grammar corrections
+* Added the option to go back in the swap menu screen.
+* Working modes were deprecated.
+* Added bitrates! Now you can chose the bitrate of your downloaded songs: Small Size (32kbps); Medium Size & Quality(128kbps); Highest Quality(320kbps).
+   * Bitrates are available on file importation and normal download. 
+* Wanting to migrate to spotDL V4? SPOTYdl now supports v4 too!! Check it out settings!! Is set up on first initialization too.
+   * When spotDL v4 comes out for the public, v3 features will be removed from SPOTYdl.
+* When Swapping between versions, your settings will be wiped out. That's to evict any internal error with different formats of settings on the different app versions.
+* Corrected some bugs between the compatibility of commands on spotDL v3 & v4.
+* Corrected a glitch when running SPOTYdl for the first time. It would say that you had updated instead of the welcome screen.
+* Several settings improvements.
+   * Corrected some bugs
+      * Now if you hit [ENTER] without typing something first, SPOTYdl won't end unexpectedly.
+   * Removed working modes
+   * Added bitrates
+      * You can chose between:
+         * 64 kbps
+         * 128 kbps
+         * 320 kbps
+   * Added spotDL version
+* Minimal code optimizations
+* Repaired a couple of bugs at the Swap versions menu.
+   * You wouldn't be able to go back when hitting [ENTER].
+   * The swap system was kinda broken. It would move all the files, but it wouldn't install them correctly...
+* Repaired a bug on the first initialization to set the history file.
+   * If you'd hit enter without defining a value SPOTYdl would crash unexpectedly.
