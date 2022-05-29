@@ -1,21 +1,19 @@
 @echo off
 ::---------------------------------------
 set count=0
-set ver=1.8
+set ver=1.9
 set SN=%~nx0
-set wm=Multiple
 set channel=Beta
 set curdir=%~dp0Downloads\
 set data=%appdata%\SPOTYdl\
 set config=%data%config.txt
 set store=%data%store\
 set temp=%data%temp\
+set tf=%data%temp\tf.19
 ::---------------------------------------
 title SPOTYdl
 color 07
 ::---------------------------------------
-if not exist %store% (md %store%)
-if not exist %temp% (md %temp%)
 if exist %~dp0setup.bat (del %~dp0setup.bat)
 if not exist %~dp0Downloads (
 	md %~dp0Downloads
@@ -32,11 +30,15 @@ if not exist %~dp0Downloads (
 	attrib +R .\Downloads
 	start "C:\Windows\System32" ie4uinit.exe -show
 )
-if not exist %data% (goto first_run) else (
-	if not exist %config% goto config_error
-	< %config% (
-  		set /p history=
-  		set /p wm=
+md %data%
+if %errorlevel%==0 (goto first_run) else (
+	if not exist %tf% (echo. >>%tf% && goto config_error) else (
+		if not exist %config% goto config_error
+		< %config% (
+  			set /p history=
+  			set /p bitrate=
+			set /p spotDL_ver=
+		)
 	)
 )
 if not "%~1"=="" (goto file_import)
@@ -50,6 +52,8 @@ if exist %temp%news.temp (del %temp%news.temp)
 mode con: cols=72 lines=20
 color 07
 set of=
+if "%bitrate%"=="64" (set "bc=Smallest Size (64kbps)") else (if "%bitrate%"=="128" (set "bc=Medium (128kbps)") else (set "bc=Highest Quality (320kbps)"))
+if "%bitrate%"=="64" (set "kbps=64k") else (if %bitrate%==128 (set "kbps=128k") else (set "kbps=320k"))
 cls
 echo.
 echo                              -SPOTYdl v%ver%-
@@ -58,10 +62,10 @@ echo.
 echo  Available audio file formats:
 echo   1) mp3                 4) opus
 echo   2) m4a                 5) ogg
-echo   3) flac                6) wav
+if %spotDL_ver%==3 (echo   3^) flac                6^) wav) else (echo   3^) flac)
 echo.
 echo  Other options:
-echo   a) Help                b) Toggle Working Mode: %wm%
+echo   a) Help                b) Toggle Bitrate: %bc%
 echo   c) List "Downloads"    d) Resume downloads
 echo   e) News                f) Changelog
 echo   g) Settings            h) Version
@@ -70,24 +74,23 @@ echo.
 echo  Input the value that corresponds to your choice.
 set /p of=^>^> 
 if not defined of (goto aoffe)
-if "%of%"=="1" (set format=mp3&& goto sstd)
-if "%of%"=="2" (set format=m4a&& goto sstd)
-if "%of%"=="3" (set format=flac&& goto sstd)
-if "%of%"=="4" (set format=opus&& goto sstd)
-if "%of%"=="5" (set format=ogg&& goto sstd)
-if "%of%"=="6" (set format=wav&& goto sstd)
-if "%of%"=="a" (set hlp=aoff && goto help)
-if "%of%"=="b" (if %wm%==Normal (set wm=Multiple&& goto aoff) else (set wm=Normal&& goto aoff))
-if "%of%"=="c" (goto list)
-if "%of%"=="d" (goto resume_sds)
-if "%of%"=="e" (goto news)
-if "%of%"=="f" (goto changelog)
-if "%of%"=="g" (goto stings)
-if "%of%"=="h" (goto dvfs)
-if "%of%"=="i" (goto disclaimer)
-if "%of%"=="j" (goto about)
-if "%of%"=="hi" (echo  Hello and Welcome to SPOTYdl!&&timeout /t 5 >nul&&goto aoff)
-if "%of%"=="-wm" (set goto=aoff && goto set_working_mode)
+if %of%==1 (set format=mp3&& goto sstd)
+if %of%==2 (set format=m4a&& goto sstd)
+if %of%==3 (set format=flac&& goto sstd)
+if %of%==4 (set format=opus&& goto sstd)
+if %of%==5 (set format=ogg&& goto sstd)
+if %spotDL_ver%==3 (if "%of%"=="6" (set format=wav&& goto sstd) else if %spotDL_ver%==4 (echo  Sorry, but the value you entered is invalid. Try again! && timeout /t 3 >nul && goto aoff))
+if %of%==a (set hlp=aoff && goto help)
+if %of%==b (if "%bitrate%"=="64" (set bitrate=128) else (if "%bitrate%"=="128" (set bitrate=HH) else (set bitrate=64))) && goto aoff
+if %of%==c (goto list)
+if %of%==d (goto resume_sds)
+if %of%==e (goto news)
+if %of%==f (goto changelog)
+if %of%==g (goto stings)
+if %of%==h (goto dvfs)
+if %of%==i (goto disclaimer)
+if %of%==j (goto about)
+if %of%==hi (echo  Hello and Welcome to SPOTYdl!&&timeout /t 5 >nul&&goto aoff)
 echo  Sorry, but the value you entered is invalid. Try again!
 timeout /t 3 >nul
 goto aoff
@@ -112,11 +115,10 @@ echo.
 echo   Paste the link to a song/playlist or simply the song name!! :D
 set /p link=^>^> 
 if "%link%"=="-b" goto aoff
-if "%link%"=="-wm" (set goto=sstd && goto set_working_mode)
 if not %count% EQU 7 (if not defined link goto blank_invalid) else (echo   DOODLE TIME!! && timeout /t 3 >nul && goto sstd)
 cls
 if %history%==true (echo %link%>>history.txt)
-spotdl "%link%" --output-format %format% --output .\Downloads\
+if %spotDL_ver%==3 (spotdl "%link%" --output-format %format% --output .\Downloads\ --bitrate %kbps%) else (spotdl download "%link%" --format %format% --output .\Downloads\ --bitrate %kbps%)
 if %errorlevel% == 0 goto clnup
 if %errorlevel% == 1 goto error1
 ::if %errorlevel% == 2 goto success
@@ -134,7 +136,9 @@ mode con: cols=80 lines=22
 set _flnm=%~n1
 set _ext=%~x1
 set imported=%~1
-set "err=0" ::if %errorlevel% EQU 0/1/2 (set /a err=%err%+1)
+set err=0
+if "%bitrate%"=="64" (set "bc=Smallest Size (64kbps)") else (if "%bitrate%"=="128" (set "bc=Medium (128kbps)") else (set "bc=Highest Quality (320kbps)"))
+if "%bitrate%"=="64" (set "kbps=64k") else (if %bitrate%==128 (set "kbps=128k") else (set "kbps=320k"))
 cls
 echo.
 if "%_ext%"==".spotdlTrackingFile" (
@@ -172,36 +176,60 @@ if "%_flnm%%_ext%"=="history.txt" (
 	exit
 )
 echo                                -File Importer-
+echo                                  SPOTYdl v%ver%
 echo.
 echo.
 echo  Imported file: "%_flnm%%_ext%"
-echo  Will download to %curdir%
+echo  Downloading to: %curdir%
+echo  spotDL version: %spotDL_ver%
 echo.
 echo  Chose an audio file format:
-echo   1) mp3                 4) opus
+echo   1) mp3		 4) opus
 echo   2) m4a		 5) ogg
-echo   3) flac		 6) wav
+if %spotDL_ver%==3 (echo   3^) flac		 6^) wav) else (echo   3^) flac)
+echo.
+echo  Other options:
+echo   a) Toggle Bitrate: %bc%
 echo.
 echo  Input the value that corresponds to your choice.
 set /p fiof=^>^> 
-if "%fiof%"=="1" (set format="mp3")
-if "%fiof%"=="2" (set format="m4a")
-if "%fiof%"=="3" (set format="flac")
-if "%fiof%"=="4" (set format="opus")
-if "%fiof%"=="5" (set format="ogg")
-if "%fiof%"=="6" (set format="wav")
+if not defined fiof (
+	echo  You can't leave this feald in blank. Try again!
+	timeout /t 3 >nul
+	goto file_import
+)
+if %fiof%==1 (set format="mp3")
+if %fiof%==2 (set format="m4a")
+if %fiof%==3 (set format="flac")
+if %fiof%==4 (set format="opus")
+if %fiof%==5 (set format="ogg")
+if %spotDL_ver%==3 (if "%of%"=="6" (set format=wav&& goto file_import) else if %spotDL_ver%==4 (echo  Sorry, but the value you entered is invalid. Try again! && timeout /t 3 >nul && goto aoff))
+if %fiof%==a (if %bitrate%==64 (set bitrate=128) else (if %bitrate%==128 (set bitrate=320) else (set bitrate=64))) && goto file_import
 if not "%_flnm%" EQU "02_02_2022" (echo  Reading "%_flnm%" and downloading all listed songs on it.) else (echo Reading "Twosday" and downloading all listed songs on it.)
 echo.
-for /F "usebackq tokens=*" %%A in ("%imported%") do (
-	if %history%==true (echo %%A>>history.txt)
-	echo Date: %date%, Time: %time% >> %data%\output.txt
-	spotdl "%%A" --output-format %format% --output %curdir%
+if %spotDL_ver%==3 (
+	for /F "usebackq tokens=*" %%A in ("%imported%") do (
+		if %history%==true (echo %%A>>history.txt)
+		spotdl "%%A" --output-format %format% --output .\Downloads\ --bitrate %kbps%
+		if %errorlevel%==0 (echo %%A>>failed_list.txt && set /a err=%err%+1)
+	)
+) else (
+	for /F "usebackq tokens=*" %%A in ("%imported%") do (
+		if %history%==true (echo %%A>>history.txt)
+		spotdl download "%%A" --format %format% --output .\Downloads\ --bitrate %kbps%
+		if %errorlevel%==0 (
+			echo %%A>>failed_list.txt
+			set /a err=%err%+1
+			)
+		echo %errorlevel%
+	)
 )
 echo.
-echo  Done!
-echo  There were %err% songs that failed downloading.
+echo   Done!
+echo   There were %err% songs that failed downloading. All
+echo  failed songs' names were saved to "failed_list.txt"
 echo.
-echo  Press any key to exit...
+echo   Press any key to quit...
 pause >nul
 exit
 
@@ -229,26 +257,6 @@ if not %ristf%==0 (
 	)
 pause >nul
 goto aoff
-
-
-:set_working_mode
-mode con: cols=59 lines=10
-set swm=""
-cls
-echo.
-echo                Change BEditor working mode
-echo.
-::by GabiBrawl
-echo   1) Normal mode, will download music once and then exit.
-echo   2) Multiple mode, won't exit when you download a music.
-echo.
-echo   Input the value that corresponds to your choice.
-set /p swm=^>^> 
-if "%swm%"=="1" (set wm=Normal&&goto %goto%)
-if "%swm%"=="2" (set wm=Multiple&&goto %goto%)
-echo        The value you entered is invalid. Try again!
-timeout /t 3 >nul
-goto set_working_mode
 
 
 :dvfs
@@ -307,7 +315,7 @@ echo  Input the number that corresponds to your choice.
 set /p swm=^>^> 
 if not defined swm goto biv
 if "%swm%"=="1" (if %upd?%==yes (goto donw_and_inst) else (goto version))
-if "%swm%"=="2" (if not %vdb%==0 (goto downgrade_menu) else (goto no_available_downgrade_entries))
+if "%swm%"=="2" (if not %vdb%==0 (goto swap_menu) else (goto no_available_downgrade_entries))
 if "%swm%"=="3" (if %upd?%==yes (goto update_chnl) else (goto version))
 if "%swm%"=="4" (goto help_v)
 if "%swm%"=="5" (goto aoff)
@@ -354,8 +362,8 @@ cls
 echo.
 echo   How does this work?
 echo   When you change your update channel, you will install
-echo  the latest update within the channel you chose.
-echo   Not ready to change? Just use [Enter] and you'll go back.
+echo  the latest update within the enrolled channel.
+echo   Not ready to change? Just press [Enter] to go back.
 echo.
 echo  Currently available channels:
 echo  a) Stable
@@ -366,12 +374,18 @@ if "%chnl%"=="b" (set channel=Beta && goto donw_and_inst)
 if "%chnl%"=="c" (goto version)
 if not defined chnl goto version
 
+:nede
+echo  The codename of the version you chose doesn't exist.
+echo  Please try again...
+timeout /t 4 >nul
+goto swap_menu
 
-:downgrade_menu
+
+:swap_menu
 set dc=
 for /f %%b in ('dir %store% ^| find "File(s)"') do (set dmva=%%b)
 if %dmva%==0 (goto no_available_downgrade_entries)
-set /a mcdm=%dmva%+12
+set /a mcdm=%dmva%+13
 mode con: cols=60 lines=%mcdm%
 cls
 echo.
@@ -381,24 +395,23 @@ echo.
 echo  All available swap versions: (current v%ver%)
 for /R "%store%" %%A in (*) do (echo   -^> %%~nA ^(%%~zA bytes^))
 echo.
-echo  Input the codename of the version you wanna downgrade to.
+echo  Input the codename of the version you wanna swap to.
+echo      Not ready to SWAP? Press [ENTER] to go back.
 set /p dc=^>^> 
+if not defined dc (goto version)
 if not exist %store%%dc%.dsv goto nede
-copy %SN% %store%%ver%.dsv /y >nul
-copy %store%%dc%.dsv %cd%\sptdl.bat /y >nul
+copy %SN% %store%%ver%.dsv /y /v >nul
+copy %store%%dc%.dsv %cd%\sptdl.bat /y /v >nul
+del %config% /f /q >nul
+del %temp% /f /q >nul
 echo @echo off>>.\setup.bat
 echo title Swapping between versions>>.\setup.bat
-echo del SPOTYdl.bat>>.\setup.bat
+echo del /f /q SPOTYdl.bat>>.\setup.bat
 echo ren sptdl.bat SPOTYdl.bat>>.\setup.bat
 echo start SPOTYdl.bat>>.\setup.bat
 echo exit>>.\setup.bat
 start setup.bat
 exit
-:nede
-echo  The codename of the version you chose doesn't exist.
-echo  Please try again...
-timeout /t 4 >nul
-goto downgrade_menu
 
 
 :no_available_downgrade_entries
@@ -434,17 +447,20 @@ goto aoff
 
 
 :list
-mode con: cols=62 lines=6
+mode con: cols=63 lines=9
 if exist .\Downloads\.spotdl-cache (del .\Downloads\.spotdl-cache >nul)
 if exist SongList.txt (goto overwrite)
 cls
 echo.
-echo  We're listing all your downloaded songs into SongList.txt
+echo                         -SONGS listing-
+echo.
+echo.
+echo   We're listing all your downloaded songs into SongList.txt
 for /r %%a in (.\Downloads\*) do (@echo %%~na>>SongList.txt)
 for /f %%b in ('dir .\Downloads\ ^| find "File(s)"') do (set lcount=%%b)
-echo  Done! %lcount% entries were registered.
+echo   Done! %lcount% entries were registered to "SongList.txt"
 echo.
-echo  Press any key to go back to the main menu...
+echo   Press any key to go back...
 pause >nul
 goto aoff
 :overwrite
@@ -468,15 +484,16 @@ goto overwrite
 :clnup
 cls
 echo.
+if %spotDL_ver%==4 goto success
 echo   Cleaning things up...
 del .\Downloads\.spotdl-cache >nul
 :success
 echo   Song/Playlist was successfuly downloaded!
 powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Information; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your download is completed!', [System.Windows.Forms.ToolTipIcon]::None)}">nul
 echo.
-if %wm%==Normal (echo  Press any key to exit) else (echo  Press any key to continue)
+echo   Press any key to continue...
 pause >nul
-if %wm%==Normal (exit) else (goto sstd)
+goto sstd
 
 
 :error1
@@ -511,10 +528,11 @@ goto aoff
 
 
 :disclaimer
-mode con: cols=57 lines=8
+mode con: cols=57 lines=9
 cls
 echo.
 echo                      -Disclaimer-
+echo.
 echo.
 echo   SPOTYdl is not endorsed by, directly affiliated with,
 echo  maintained, authorized, or sponsored by spotDL.
@@ -525,16 +543,16 @@ goto aoff
 
 
 :help
-mode con: cols=52 lines=11
+mode con: cols=52 lines=12
 cls
 echo.
 echo                     -HELP file-
 echo.
+echo.
 echo   This script lets you download music using spotDL
 echo  more easily.
-echo.
-echo   Simply chose a song format, and then the spotify
-echo  song link/name.
+echo   Start by chosing a song format (1-6), after that
+echo  type in the song link/name.
 echo.
 echo  Press any key to go back...
 pause >nul
@@ -542,8 +560,9 @@ goto %hlp%
 
 
 :help_v
-mode con: cols=62 lines=8
+mode con: cols=62 lines=9
 cls
+echo.
 echo                    -Version HELP file-
 echo.
 echo.
@@ -581,7 +600,7 @@ goto aoff
 
 
 :spotDL_trouble
-mode con: cols=54 lines=11
+mode con: cols=54 lines=13
 cls
 echo.
 echo   Hey there! You can't simply run this script without
@@ -590,6 +609,8 @@ echo  github to automate the installation!
 echo.
 echo.
 echo   ERROR CODE: spotdl was not recognized as a command.
+echo   Maybe your settings are incorrect? Try changing the
+echo  defined spotDL version.
 echo.
 echo   Press any key to exit...
 pause >nul
@@ -598,6 +619,8 @@ exit
 
 :first_run
 mode con: cols=56 lines=8
+if not exist %store% (md %store%)
+if not exist %temp% (md %temp%)
 cls
 echo.
 echo                   Welcome to SPOTYdl!
@@ -606,25 +629,55 @@ echo  you gotta do some configurations to continue.
 echo.
 echo   Press any key to start...
 pause >nul
-mode con: cols=56 lines=5
+mode con: cols=63 lines=7
+:----1----
 cls
 echo.
 echo   Firstly, do you want us to create a history file to
 echo  store your downloads history? (y/n)
 echo.
 set /p history=^>^> 
-if %history%==y (set hf=true) 
-if %history%==n (set hf=false)
-md %data%
-(
-	echo %hf%
-	echo %wm%
-) >%config%
+if not defined history (
+	echo   You gotta chose between y/n ^(yes or no^). Try again!
+	timeout /t 3 >nul
+	goto ----1----
+)
+if %history%==y (set history=true) 
+if %history%==n (set history=false)
+:----2----
+cls
+mode con: cols=63 lines=7
 cls
 echo.
-echo   Congrats! You have ended the configuration!
+echo   Nextly, what's your desired bitrate when downloading songs?
+echo                          (64/128/320)
 echo.
-echo   Press any key to start using the app...
+set /p bitrate=^>^> 
+if not %bitrate%==64 (if not %bitrate%==128 (if not %bitrate%==320 (echo  SPOTYdl only supports 64, 128 and 320kbps. Try again! && timeout /t 5 >nul && goto ----2----)))
+:----3----
+cls
+mode con: cols=59 lines=7
+cls
+echo.
+echo   Finnaly, what version of spotDL have you got installed?
+echo                           (3/4)
+echo.
+set /p spotDL_ver=^>^> v
+if not %spotDL_ver%==3 (if not %spotDL_ver%==4 (echo  SPOTYdl only supports v3 and v4. Try again! && timeout /t 5 >nul && goto ----3----))
+:---save---
+echo.>>%tf%
+md %data%
+(
+	echo %history%
+	echo %bitrate%
+	echo %spotDL_ver%
+) >%config%
+mode con: cols=62 lines=7
+cls
+echo.
+echo   Congrats! You have ended the initial configuration!
+echo.
+echo   Press any key to begin the app usage...
 pause >nul
 < %config% (
 	set /p history=
@@ -633,14 +686,16 @@ goto aoff
 
 
 :stings
-mode con: cols=53 lines=14
+mode con: cols=53 lines=16
+set choice=
 cls
 echo.
 echo                       -Settings-
 echo.
 echo.
 echo  Available tweakable settings:
-echo   1) History: %history%       2) Working mode: %wm%
+echo   1) History: %history%       2) Bitrate: %bitrate%
+echo   3) spotDL: v%spotDL_ver%
 echo.
 echo  Other options:
 echo   a) Save changes ^& exit
@@ -648,8 +703,14 @@ echo   b) Exit without saving changes.
 echo.
 echo  Input the value that corresponds to your choice
 set /p choice=^>^> 
+if not defined choice (
+	echo  You can't leave this feald in blank. Try again!
+	timeout /t 3 >nul
+	goto stings
+)
 if %choice%==1 (goto sh)
-if %choice%==2 (goto swm)
+if %choice%==2 (goto bs)
+if %choice%==3 (goto svs)
 if %choice%==a (goto ss)
 if %choice%==b (goto reload)
 echo  Invalid choice. Please try again!
@@ -657,7 +718,7 @@ timeout /t 3 >nul
 goto stings
 
 :sh
-mode con: cols=36 lines=9
+mode con: cols=37 lines=9
 set sh=
 cls
 echo.
@@ -677,20 +738,46 @@ echo   Invalid choice. Please try again!
 timeout /t 3 >nul
 goto sh
 
-:swm
-mode con: cols=34 lines=6
+:bs
+mode con: cols=37 lines=9
+set sh=
 cls
 echo.
-echo            Working mode:
-echo        1=Normal, 2=Multiple
+echo    Chose your desired bitrate
+echo           64, 128, 320
 echo.
-set /p sh=^>^> 
-if "%sh%"=="1" (
-	set wm=Normal
+set /p bs=^>^> 
+if %bs%==64 (
+	set bitrate=64
 	goto stings
 )
-if "%sh%"=="2" (
-	set wm=Multiple
+if %bs%==128 (
+	set bitrate=128
+	goto stings
+)
+if %bs%==320 (
+	set bitrate=320
+	goto stings
+)
+echo   Invalid choice. Please try again!
+timeout /t 3 >nul
+goto sh
+
+:svs
+mode con: cols=49 lines=9
+set sh=
+cls
+echo.
+echo    Set the current installed version of spotDL
+echo                       3, 4
+echo.
+set /p svs=^>^> 
+if %svs%==3 (
+	set spotDL_ver=3
+	goto stings
+)
+if %svs%==4 (
+	set spotDL_ver=4
 	goto stings
 )
 echo   Invalid choice. Please try again!
@@ -701,23 +788,26 @@ goto sh
 del %config% /f /q
 (
 	echo %history%
-	echo %wm%
+	echo %bitrate%
+	echo %spotDL_ver%
 ) >%config%
 :reload
 < %config% (
 	set /p history=
-	set /p wm=
+  	set /p bitrate=
+	set /p spotDL_ver=
 )
 goto aoff
 
 :config_error
-mode con: cols=46 lines=8
+mode con: cols=46 lines=9
 cls
 echo.
 echo                -config ERROR-
 echo.
+echo.
 echo   Seems like you updated to this version and
-echo  didn't run the initial configuration.
+echo  newer features were introduced since then..
 echo.
 echo   Press any key to run the configuration...
 pause >nul
