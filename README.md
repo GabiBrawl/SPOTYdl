@@ -1,4 +1,4 @@
-<a href="https://gabibrawl.github.com/git-cloud-storage/script.bat" target="_blank">
+<a href="https://gabibrawl.github.com/SPOTYdl/server/script.bat" target="_blank">
   <img width="100" height="100" border="0" align="center"  src="https://user-images.githubusercontent.com/85069997/163675739-355dc669-721e-4d55-9f31-1fc56d59cff5.png"/>
 </a>
 
