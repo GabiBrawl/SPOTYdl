@@ -1,4 +1,4 @@
-<a href="https://downgit.github.io/#/home?url=https://github.com/GabiBrawl/SPOTYdl/blob/main/server/script.bat" target="_blank">
+<a href="https://github.com/GabiBrawl/SPOTYdl/releases/tag/SPOTYdl_v2.0" target="_blank" draggable="false"/>
   <img width="100" height="100" border="0" align="center"  src="https://user-images.githubusercontent.com/85069997/163675739-355dc669-721e-4d55-9f31-1fc56d59cff5.png"/>
 </a>
 
@@ -9,7 +9,8 @@
 What's SPOTYdl you may ask. SPOTYdl is a script to help you download songs using spotDL more easilly, and has a couple of new and cool features more than the main project. (spotDL)
 
 ![prtnscrn 1](https://user-images.githubusercontent.com/85069997/173223783-bd2e5198-451d-4489-aaf5-8b675072fd68.png)
-If you already have spotDL installed, download SPOTYdl from ![here](https://github.com/GabiBrawl/SPOTYdl/blob/main/server/script.bat)
+
+### To download SPOTYdl, ![**click here**]([https://github.com/GabiBrawl/SPOTYdl/blob/main/server/script.bat](https://github.com/GabiBrawl/SPOTYdl/releases/tag/SPOTYdl_v2.0)).
 
 # Features
 ### Download history
