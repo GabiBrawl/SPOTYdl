@@ -1,6 +1,13 @@
+                       -Changelog for SPOTYdl-
+Info:
+   - Features marked with an asterisk (*) are features that are already implemented.
+   - Features marked with a minus sign (-) are features that weren't finished, and are going to be implemented on child versions. The updates that contain that character, are updates that are available only on the BETA channel. When these updates get finished, they will be pushed to the stable channel.
+   - The date besides all the features' versions correspond to the dates of when the update was released to the stable channel.
+
+
 _______________________________V0.1_______________________________ 25/02/2022
                           INITIAL RELEASE
-* You'll experience many bugs(yeah, so many that I'm uploading it now, for help... pls?), but you can already chose the final music format and download normally.
+* You'll experience many bugs (yeah, so many that I'm uploading it now, for help... pls?), but you can already chose the final music format and download normally.
 * You'll ALWAYS receive notifications as failed, don't worry, most of the times it didn't, its just a bug with %errorlevel%...
 * SETUP (NOT TESTED): you won't be able to use SPOTYdl without running the setup file first.
 
@@ -159,3 +166,37 @@ _______________________________V1.9_______________________________ 29/05/2022
    * The swap system was kinda broken. It would move all the files, but it wouldn't install them correctly...
 * Repaired a bug on the first initialization to set the history file.
    * If you'd hit enter without defining a value SPOTYdl would crash unexpectedly.
+
+
+________________________________V2.0________________________________ xx/06/2022
+* Corrected yet more design inconsistencies on:
+   * Settings;
+   * About;
+   * Download error/success screens
+   * Corrected some grammar misspellings
+* Several bug corrections:
+   * When hitting [ENTER] on any of the new settings menus it would return you into the history settings menu instead of the main settings menu;
+   * Many other minor bugs were corrected too.
+* Code optimizations
+* Upgraded the list feature. Now you can list other folders non the "Downloads"!!
+* Removed the obligation of the Downloads' folder name being "Downloads". You will need to delete the current folder for the changes to apply starting from this version.
+* Added the ability to change the Downloads' folder name from within the app!
+* The title of the application will include the running directory, so if you have multiple instances open, you can easily know where you're downloading your songs.
+   * Can be enabled on settings!!
+* Added error codes. When an error occurs, SPOTYdl will give you an ERRC with a #number assigned to it. That number can be used for support and issue reporting.
+* Added an option on settings that will let you reset the app configuration. Each time you upgrade, the reset will be automatically triggered for new features to get in, minimizing the amount of possible bugs and/or glitches.
+   * We will save an extra file on the app's temp folder that will store the previous running version. In case the app updates and the values don't match, an automatic reset will be triggered. This will be disabled when no new features related to settings come up.
+* When entering the version menu, there will appear a caption informing you to wait a moment.
+- Preparatory updates are coming! These updates are made to set up the current installed version to be prepared for new updates. This feature is only being implemented now, in case it's needed in the future. These updates are obligatory, even if you won't install the next update of the app. It will happen at most once per version, so not that much to worry about!
+   - Version checking is going to be set-up upon each initialization of the app.
+      - Use a separate process..?
+   - in future could be used for remote bug removal.
+* Setup integration. You can install and setup spotDL from the main app. The setup app is going extinct.
+   * Here you can chose the components you wanna get installed, and the components you don't want/need to!!
+   * Can be found inside the version menu.
+   * Unzipper and other essential tools are going to be downloaded to the temp folder.
+   - Uninstaller
+* Removed the reload server version. Why would you wait that much till a new version comes out lmao
+- When a new server version is available, SPOTYdl will ask to update. You can disable that warning for future updates. It can be re-enabled in settings!!
+* When you install spotDL from within the app, we will set the spotDL version automatically for you!!
+* Moved the changelog into the version menu.
