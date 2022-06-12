@@ -7,7 +7,8 @@
 ### Download spotify songs/playlists with ease!
 
 What's SPOTYdl you may ask. SPOTYdl is a script to help you download songs using spotDL more easilly, and has a couple of new and cool features more than the main project. (spotDL)
-![Screenshot (379)](https://user-images.githubusercontent.com/85069997/163430374-f29fdf32-eb2e-46e0-8f9c-706d7d316194.png)
+
+![prtnscrn 1](https://user-images.githubusercontent.com/85069997/173223783-bd2e5198-451d-4489-aaf5-8b675072fd68.png)
 If you already have spotDL installed, download SPOTYdl from ![here](https://github.com/GabiBrawl/SPOTYdl/blob/main/server/script.bat)
 
 # Features
