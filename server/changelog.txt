@@ -1,7 +1,11 @@
                        -Changelog for SPOTYdl-
+
 Info:
    - Features marked with an asterisk (*) are features that are already implemented.
    - Features marked with a minus sign (-) are features that weren't finished, and are going to be implemented on child versions. The updates that contain that character, are updates that are available only on the BETA channel. When these updates get finished, they will be pushed to the stable channel.
+   - Features marked with a plus sign (+) are features that weren't finished, but may not be implemented.
+   - Features marked with a dollar sign ($) are features that were finished and added to a child version.
+   - Bugs/Glitches marked with a cross sign (x) are B/G that don't have a solution yet but may be repaired in the future.
    - The date besides all the features' versions correspond to the dates of when the update was released to the stable channel.
 
 
@@ -168,7 +172,7 @@ _______________________________V1.9_______________________________ 29/05/2022
    * If you'd hit enter without defining a value SPOTYdl would crash unexpectedly.
 
 
-________________________________V2.0________________________________ xx/06/2022
+________________________________V2.0________________________________ 13/06/2022
 * Corrected yet more design inconsistencies on:
    * Settings;
    * About;
@@ -187,16 +191,87 @@ ________________________________V2.0________________________________ xx/06/2022
 * Added an option on settings that will let you reset the app configuration. Each time you upgrade, the reset will be automatically triggered for new features to get in, minimizing the amount of possible bugs and/or glitches.
    * We will save an extra file on the app's temp folder that will store the previous running version. In case the app updates and the values don't match, an automatic reset will be triggered. This will be disabled when no new features related to settings come up.
 * When entering the version menu, there will appear a caption informing you to wait a moment.
-- Preparatory updates are coming! These updates are made to set up the current installed version to be prepared for new updates. This feature is only being implemented now, in case it's needed in the future. These updates are obligatory, even if you won't install the next update of the app. It will happen at most once per version, so not that much to worry about!
-   - Version checking is going to be set-up upon each initialization of the app.
-      - Use a separate process..?
-   - in future could be used for remote bug removal.
++ Preparatory updates are coming! These updates are made to set up the current installed version to be prepared for new updates. This feature is only being implemented now, in case it's needed in the future. These updates are obligatory, even if you won't install the next update of the app. It will happen at most once per version, so not that much to worry about!
+   + Version checking is going to be set-up upon each initialization of the app.
+      + Use a separate process..?
+   + In future will be used for bug removal.
 * Setup integration. You can install and setup spotDL from the main app. The setup app is going extinct.
    * Here you can chose the components you wanna get installed, and the components you don't want/need to!!
    * Can be found inside the version menu.
    * Unzipper and other essential tools are going to be downloaded to the temp folder.
-   - Uninstaller
+   $ Uninstaller
 * Removed the reload server version. Why would you wait that much till a new version comes out lmao
-- When a new server version is available, SPOTYdl will ask to update. You can disable that warning for future updates. It can be re-enabled in settings!!
+$ When a new server version is available, SPOTYdl will ask to update.
+   $ Checks every time you run the program.
+      $ You can disable this feature. It can be re-enabled in settings!!
 * When you install spotDL from within the app, we will set the spotDL version automatically for you!!
 * Moved the changelog into the version menu.
+
+
+________________________________V2.1________________________________ 19/06/2022
+* Bug corrections & New features. (Yup, this update damaged many features)
+   * Main Menu:
+      * The mp3 choice would make the program die unexpectedly.
+   * spotDL:
+      * I realized that v3 of spotDL didn't support setting the bitrate. The command had the bitrate option and it was removed.
+         * The main menu bitrate option will disappear when v3 is selected.
+      x The error screens are totally bugged rn.
+         x Making the notifications bugged too.
+   * Settings:
+      * Settings wouldn't save correctly
+      x The configuration file would get corrupted on its own.
+         * Not only, but also because of the new process temporary files creation
+      * When resetting the Downloads folder name, the configuration file would get some spaces that would corrupt the downloading process.
+      x Some configuration entries would get saved with "ECHO is off." instead of their corresponding values.
+      * The window size was too small for the info...
+   * Startup:
+      * The program would fail just when trying to startup.
+         * The version checking menu would just say that code was wrong, while not being it. So the feature is temporarily deprecated. The code will be available though, but inside comments. If you got it working, thank you <3
+   * Version menu:
+      * Changelog downloader:
+         * It wouldn't go back to the version menu, instead it would go to the main menu upon download completion...
+         * Now it does get downloaded into the temporary folder.
+      * Channel:
+         * Menu Remodel.
+         * New system.
+   * Song downloading:
+      * Now when a song finishes downloading, it will send you back into the main menu.
+      * Made a quick remodel & size changing to the menu.
+* Corrected some bugs and optimized the setup.
+   * Error screens where created.
+      * Useful for when a requirement isn't correctly installed.
+   * Removed some bugs on the C++ Runtime Environment setup installation.
+   * Removed some bugs on the ffmpeg unzipping.
+   * spotDL installation methods were changed.
+   * Now you can download a self extractable zip containing all the setup files for offline installation.
+      * Just run the zip and use the setup normally!
+* Changes to the song listing menu.
+   * Redesigned with new features!!
+      * Added a line to indicate that a new process is running;
+      * Added the name of the currently downloading song;
+      * Added the total amount of entries of the imported file;
+      * Added the value of the song that is currently downloading;
+      * Added the value of the successfully downloaded songs;
+      * Added the value of the failed downloading songs;
+      * Estimated downloading time;
+      * Corrected a bunch of bugs on all the features listed above;
+      * Upon starting, it will disable the automatic computer standby time. Upon finishing the job, it will restore to 10 minutes. I didn't get a way to get the value of your current setting, so sorry for the inconvenience.
+      * Now you can set an action upon the downloading completion!
+         * Deprecated the computer sleep action. Refused to work for some reason...
+      * When the job is finished, you'll receive a notification making the announcement, and gives you the amount of failed downloads too.
+   * Correction of bugs.
+      * It wouldn't list songs on other folders, non the Downloads one.
+      * It wouldn't list songs if the Downloads folder was ever renamed.
+      * It will now save the correct name of the failed songs into "failed_list.txt"
+* On song downloading completion/failure, the program won't clear the screen. Like that you get some more info related to the problem (if ever occurs).
+* Added uninstaller. You can now uninstall dependencies from within the setup!
+* Added the server version checking.
+* Settings menu improvements.
+   * Two-option settings were changed to toggle settings.
+* Debug mode
+   * Can only be activated within the code. Set the debug variable to true if you wanna enable it.
+   * Activates spotDL logs in debug mode.
+      * Rn only available at the normal song downloading method.
+      + Logs get saved into "%appdata%\SPOTYdl\logs\"
+   * Shows the used downloading commands, and pauses the script for better readability.
+      * Don't expect that smooth app experience with debug enabled.
