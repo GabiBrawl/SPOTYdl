@@ -451,7 +451,7 @@ goto main_menu
 
 
 :dvfs
-if exist %temp%s.ver (del %temp%s.ver)
+if exist %temp%s.txt (del %temp%s.txt)
 if %channel%==Stable (
 	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile %temp%s.txt">nul
 ) else (
@@ -462,7 +462,6 @@ goto version_menu
 
 :version_menu
 if not exist %info% (md %info%)
-if exist %temp%s.txt (del %temp%s.txt)
 mode con: cols=51 lines=25
 set swm=
 set sver=no_connection
