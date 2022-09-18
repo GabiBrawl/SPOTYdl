@@ -275,3 +275,51 @@ ________________________________V2.1________________________________ 19/06/2022
       + Logs get saved into "%appdata%\SPOTYdl\logs\"
    * Shows the used downloading commands, and pauses the script for better readability.
       * Don't expect that smooth app experience with debug enabled.
+
+
+________________________________V2.2________________________________ 18/09/2022
+* YET MORE Bug corrections (why's it so hard to exterminate bugs xD)
+   * If you delete the Downloads folder while the script is running, you won't get the styled Downloads folder icon. (Fun Fact! This bug actually existed since v1.8!)
+   * Repaired a glitch that would cause malfunction with directory paths containing spaces. (Fun Fact! This glitch actually existed since v1.8 too!)
+* Some UI inconsistencies corrected.
+* Removed a no longer used setting within the settings menu.
+* Manual audio matching feature is now available from within the main menu!
+   * You match a YouTube video song link with a spotify song for it's metadata!!
+* Various bug patches and optimizations added into the code.
+   * Removed many unused comments and labels.
+   * Added some input protection, that will block the input if contains a banned character. (&; @; $; ~; !; #)
+      * Not yet available on all inputs. Only on the song search and manual matching menus.
+* Corrected some bugs over the setup
+   * Added the option to force update spotDL, but only works when online. For offline zip, you may wanna wait till the next release of the self extracting RAR file we've got for you.
+* User Profiles
+   * Admin control panel
+      - Can check all registered users
+         - Their corresponding passwords (if any is set)
+         - Change their configurations
+      - Set installation level settings (instead of per user's)
+      * it's obligatory to set a password for this account.
+   - Settings are going to be separated per user.
+   * The user name will appear in the script's window title too.
+* BSync
+   * From now on, you will have an option to synchronize your songs simply with a Paired Device's Bluetooth name!!!
+      * Actually, there are two. One of them being more practical, but you only get a mere estimative of how much your songs will take to transfer... The second option ain't that practical (as you gotta accept every single song you have in the target device... haven't yet figured how to go around that problem...), but nicer with realtime time remaining counter, and other nice to have ui features that aren't supported in the first method.
+- Working modes are back!!
+   - When setting up SPOTYdl for the first time, you can set whether you want SPOTYdl installed in portable mode, or user mode. System level installations (for all users in that device) may come later.
+* Import a Recovery Flashing Command.
+   - As this version is full of bugs, cause everything had to be reprogrammed while adding the new users feature, you will be able to start SPOTYdl differently with two different little commands.
+      * flash
+         * Resets the whole program's settings. Downloaded songs will stay intact.
+            * DOESN'T WORK EITHER xD
+      - recovery
+         - Starts the recovery mode of SPOTYdl. There you can get some troubleshooting tools that'll help unbricking the programs's configurations.
+* Version Menu
+   * Added last updated date.
+   * Added server version upload date.
+* All the above was remade from 0 at this point...
+* txt list importing:
+   * Corrected a bug when using spotDL v3.
+   * Changed the download screen to clear up every time a song gets downloaded. More pretty!
+   * Corrected a glitch that if an incorrect input is set it would start the download process.
+   * Corrected a bug that wouldn't make the upon completion selection feature work...
+   * Removed the success and failure info when downloading songs when using spotDL v3. v3 doesn't have errorlevels.
+* Rephrased the about SPOTYdl text, to be consistent in phrase sizing. Hard work, but accomplishable!
