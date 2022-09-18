@@ -471,7 +471,6 @@ set /p last_updated=<%info%last_updated.dat
 if not defined last_updated (set last_updated=not defined)
 < %temp%s.txt (
 	set /p sver=
-  	set /p server_version_upload_date=
 )
 cls
 echo.
@@ -481,9 +480,6 @@ echo.
 echo  Installed Version: %ver%
 echo    - last updated: %last_updated%
 echo  Server Version: %sver%
-if not %sver%==no_connection (
-	echo    - upload date: %server_version_upload_date%
-)
 echo  Update channel: %channel%
 ::echo  Preparatory update: %prep%
 echo.
@@ -545,7 +541,7 @@ echo del SPOTYdl.bat>>.\setup.bat
 echo copy %temp%SPOTYdl.bat %%~dp0>>.\setup.bat
 echo start SPOTYdl.bat>>.\setup.bat
 echo exit>>.\setup.bat
-start setup_menu.bat
+start setup.bat
 exit
 
 
