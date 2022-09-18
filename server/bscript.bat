@@ -278,7 +278,6 @@ exit
 :main_menu
 if %atd%==enabled (title SPOTYdl - %logged_username% - %~dp0) else (title SPOTYdl - %logged_username%)
 set curdir=%~dp0%downloads_folder%\
-if exist %temp%s.txt (del %temp%s.txt)
 if exist %temp%news.temp (del %temp%news.temp)
 if %logged_username%==Admin (goto :control_panel)
 mode con: cols=80 lines=20
@@ -451,15 +450,12 @@ goto main_menu
 
 
 :dvfs
-if exist %temp%s.txt (del %temp%s.txt)
+if exist %temp%s.ver (del %temp%s.ver)
 if %channel%==Stable (
-	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile %temp%s.txt">nul
+	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile %temp%s.ver">nul
 ) else (
-	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile %temp%s.txt">nul
+	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile %temp%s.ver">nul
 )
-goto version_menu
-
-
 :version_menu
 if not exist %info% (md %info%)
 mode con: cols=51 lines=25
@@ -468,9 +464,7 @@ set sver=no_connection
 set upd?=yes
 set /p last_updated=<%info%last_updated.dat
 if not defined last_updated (set last_updated=not defined)
-< %temp%s.txt (
-	set /p sver=
-)
+set /p sver=<%temp%s.ver
 cls
 echo.
 echo                   -Version menu-
@@ -480,7 +474,6 @@ echo  Installed Version: %ver%
 echo    - last updated: %last_updated%
 echo  Server Version: %sver%
 echo  Update channel: %channel%
-::echo  Preparatory update: %prep%
 echo.
 echo  SPOTYdl related features:
 ::by GabiBrawl
