@@ -1078,7 +1078,7 @@ powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -A
 echo.
 echo   Press any key to continue...
 pause >nul
-goto main_menu
+goto sstd
 
 
 :error1
