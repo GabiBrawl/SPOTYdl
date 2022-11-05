@@ -1101,12 +1101,12 @@ if %spotDL_ver%==4 goto success
 echo   Cleaning things up...
 del %curdir%.spotdl-cache >nul
 :success
-echo   Song(s) was successfuly downloaded!
+echo   Song(s) was(were) successfuly downloaded!
 powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Information; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your download is finished!', [System.Windows.Forms.ToolTipIcon]::None)}">nul
 echo.
 echo   Press any key to continue...
 pause >nul
-goto main_menu
+goto sstd
 
 
 :error1
