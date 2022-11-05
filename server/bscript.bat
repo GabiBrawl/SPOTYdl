@@ -1,9 +1,9 @@
 @echo off
 ::tweak----
-set ver=2.2
+set ver=2.4
 set channel=Beta
 set setupv=3.1
-set debug=true
+set debug=false
 ::---------
 set count=0
 set SN=%~nx0
@@ -68,7 +68,10 @@ if not exist %sp%"%downloads_folder%" (
 if not exist %logged% goto login_menu
 < %logged% (
 	set /p logged_username=
+	echo %logged_username%
+	pause
 )
+if "logged_username"=="Admin" (del %logged% && goto folder_chk)
 :import_check
 if not "%~1"=="" (goto file_importing)
 goto main_menu
@@ -88,7 +91,7 @@ set ttl=0
 set et=0
 set ttl_time=Calculating...
 set fiof=
-if "%bitrate%"=="64" (set "bc=Smallest Size (64kbps)") else (if "%bitrate%"=="128" (set "bc=Medium (128kbps)") else (set "bc=Highest Quality (320kbps)"))
+if "%bitrate%"=="64" (set "bc=Smallest File Size (64kbps)") else (if "%bitrate%"=="128" (set "bc=Medium Audio Quality (128kbps)") else (set "bc=Best Audio Quality (320kbps)"))
 if "%bitrate%"=="64" (set "kbps=64k") else (if %bitrate%==128 (set "kbps=128k") else (set "kbps=320k"))
 cls
 echo.
@@ -283,7 +286,7 @@ if %logged_username%==Admin (goto :control_panel)
 mode con: cols=80 lines=20
 color 07
 set of=
-if "%bitrate%"=="64" (set "bc=Smallest Size ^(64kbps^)") else (if "%bitrate%"=="128" (set "bc=Medium ^(128kbps^)") else (set "bc=Highest Quality ^(320kbps^)"))
+if "%bitrate%"=="64" (set "bc=Smallest File Size ^(64kbps^)") else (if "%bitrate%"=="128" (set "bc=Medium Audio Quality ^(128kbps^)") else (set "bc=Best Audio Quality ^(320kbps^)"))
 if "%bitrate%"=="64" (set "kbps=64k") else (if %bitrate%==128 (set "kbps=128k") else (set "kbps=320k"))
 cls
 echo.
@@ -303,7 +306,7 @@ if %spotDL_ver%==4 (
 )
 echo   c) List songs               d) Resume downloads
 echo   e) Manual Audio Matching    f) Setup v%setupv%
-echo   g) BSync                    h) Users: %logged_username%
+echo   g) BSync                    h) Users Beta: %logged_username%
 echo   i) Settings                 j) Version
 echo.
 echo  Input the value that corresponds to your choice.
@@ -342,6 +345,7 @@ goto main_menu
 echo  You can't leave this field in blank. Try again!
 timeout /t 3 >nul
 goto main_menu
+
 
 
 :search_song_menu
@@ -402,6 +406,7 @@ timeout /t 3 >nul
 goto search_song_menu
 
 
+
 :ver_alert
 set va=
 cls
@@ -420,6 +425,7 @@ if %va%==d (
 	call :svs
 	goto import_check
 )
+
 
 
 :resume_sds
@@ -449,6 +455,7 @@ pause >nul
 goto main_menu
 
 
+
 :dvfs
 if exist %temp%s.ver (del %temp%s.ver)
 if %channel%==Stable (
@@ -470,8 +477,8 @@ echo.
 echo                   -Version menu-
 echo.
 echo.
-echo  Installed Version: %ver%
-echo    - last updated: %last_updated%
+echo  Running Version: %ver%
+echo    - updated on: %last_updated%
 echo  Server Version: %sver%
 echo  Update channel: %channel%
 echo.
@@ -516,6 +523,7 @@ timeout /t 3 >nul
 goto version_menu
 
 
+
 :update
 title SPOTdl - upgrade
 cls
@@ -535,6 +543,7 @@ echo start SPOTYdl.bat>>.\setup.bat
 echo exit>>.\setup.bat
 start setup.bat
 exit
+
 
 
 :update_chnl
@@ -557,6 +566,7 @@ if "%chnl%"=="a" (set channel=Stable && goto dvfs)
 if "%chnl%"=="b" (set channel=Beta && goto dvfs)
 if "%chnl%"=="c" (goto version_menu)
 if not defined chnl goto version_menu
+
 
 
 :setup_menu
@@ -613,6 +623,7 @@ timeout /t 3 >nul
 goto setup_menu
 
 
+
 :no_tools
 md %tools%
 cls
@@ -647,6 +658,7 @@ pause >nul
 goto setup_menu
 
 
+
 :tools_download_fail
 del %tools%
 echo  There was an error downloading the tools. Please try again later.
@@ -654,6 +666,7 @@ echo.
 echo  Press any key to go back...
 pause >nul
 goto main_menu
+
 
 
 :ip
@@ -678,6 +691,7 @@ echo  Python was installed successfully.
 echo  Press any key to go back...
 pause >nul
 goto setup_menu
+
 
 
 :iff
@@ -996,7 +1010,7 @@ set /p ftl=^>^>
 if not defined ftl goto main_menu
 if %ftl%==1 (
 	set sfl=.\%downloads_folder%\*
-	goto slisting
+	goto slis   ting
 	)
 if %ftl%==2 (goto sfsl)
 echo  Sorry, but the value you entered is invalid. Try again!
@@ -1012,7 +1026,7 @@ echo.
 echo                            -SONGS listing-
 echo.
 echo.
-echo   Now input the location of the folder you wanna list it's music:
+echo   Input the location of the folder you wanna list it's music:
 echo.
 set /p sfsl=^>^> 
 set sfl=%sfsl%\
@@ -1022,6 +1036,7 @@ if not %errorlevel%==0 (goto slisting) else (
 	timeout /t 3 >nul
 	goto sfsl
 )
+goto :slisting
 
 
 :slisting
@@ -1030,7 +1045,7 @@ echo.
 echo                            -SONGS listing-
 echo.
 echo.
-echo   We're listing all the songs in the selected folder into SongList.txt
+echo   We're listing all the songs of the selected folder into SongList.txt
 echo   Wait a moment please...
 for %%f in (%sfl%*) do @echo %%~nf >> SongList.txt
 for /f %%b in ('dir %sfl% ^| find "File(s)"') do (set lcount=%%b)
@@ -1086,7 +1101,7 @@ if %spotDL_ver%==4 goto success
 echo   Cleaning things up...
 del %curdir%.spotdl-cache >nul
 :success
-echo   Song/Playlist was successfuly downloaded!
+echo   Song(s) was successfuly downloaded!
 powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Information; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your download is finished!', [System.Windows.Forms.ToolTipIcon]::None)}">nul
 echo.
 echo   Press any key to continue...
@@ -1096,7 +1111,7 @@ goto main_menu
 
 :error1
 echo.
-echo  The song/playlist you tried downloading failed.
+echo  The song(s) you tried downloading failed.
 echo  ERRC: #3
 echo.
 echo  Please try again later...
@@ -1360,20 +1375,6 @@ if %errorlevel%==1 (
 set downloads_folder=%nn%
 goto ss
 
-:config_error
-mode con: cols=46 lines=9
-cls
-echo.
-echo             -Configuration update-
-echo.
-echo.
-echo   Seems like you updated to this version and
-echo  newer features were introduced since then..
-echo.
-echo   Press any key to run the configuration...
-pause >nul
-goto first_run
-
 
 :user_info_menu
 set choice=
@@ -1403,7 +1404,21 @@ if %choice%==3 (
 )
 echo   That's an invalid option. Try again!
 timeout /t 3 >nul
-goto :user_info_menu
+goto user_info_menu
+
+:config_error
+mode con: cols=46 lines=9
+cls
+echo.
+echo             -Configuration update-
+echo.
+echo.
+echo   Seems like you updated to this version and
+echo  newer features were introduced since then..
+echo.
+echo   Press any key to run the configuration...
+pause >nul
+goto first_run
 
 
 :change_password
@@ -1412,7 +1427,7 @@ if exist %users%%logged_username%/psw.id (
     	set /p psw=
     )
 ) else (
-    goto :set_new_password
+    goto set_new_password
 )
 set input=
 cls
@@ -1425,7 +1440,7 @@ echo  Other options:
 echo   [ENTER] Go Back
 echo.
 set /p input=^>^>
-if not defined input (goto :user_info_menu)
+if not defined input (goto user_info_menu)
 if not %input%==%psw% (
 	echo  Wrong input. Try again!
 	timeout /t 3 >nul
@@ -1439,17 +1454,19 @@ echo                                 -Password-
 echo.
 echo.
 echo  Input your new password:
+echo   Is case sensitive
 echo   [ENTER] Removes the current password, if any is set
 echo.
 set /p input=^>^> 
 if not defined input (del %users%%logged_username%\psw.id /f /q) else (echo %input%>%users%%logged_username%\psw.id)
-goto :user_info_menu
+goto user_info_menu
 
 
 :login_menu
 title SPOTYdl - Login menu
 if exist %logged% (del %logged%)
 if not exist %users% (goto :register_admin)
+if not exist "%users%Admin\" (goto :register_admin)
 for /f %%b in ('dir %users% ^| find "Dir(s)"') do (set dmva=%%b)
 set /a mcdm=%dmva%+10
 set count=0
@@ -1672,6 +1689,7 @@ pause >nul
 goto bsync
 
 
+
 :transfer_2
 set rmt=
 echo.
@@ -1686,6 +1704,7 @@ echo  Done!
 pause >nul
 echo  Press any key to continue...
 goto main_menu
+
 
 
 
@@ -1741,9 +1760,9 @@ set sh=
 cls
 echo.
 echo    Chose your desired bitrate:
-echo          64 - Low Quality
-echo         128 - Medium Quality
-echo         320 - High Quality
+echo          64 - Low Audio Quality
+echo         128 - Medium Audio Quality
+echo         320 - High Audio Quality
 echo     [ENTER] - Go back
 echo.
 echo.
@@ -1790,8 +1809,45 @@ goto reset
 
 
 :manual_audio_matching
-:set_audio_file_format
-set aff=
+set mam=
+if not defined format set format=not defined
+if not defined yt_url set yt_url=not defined
+if not defined sp_url set sp_url=not defined
+mode con: cols=80 lines=16
+cls
+echo.
+echo                              -Manual Audio Matching-
+echo.
+echo.
+echo  1) Audio file format: %format%
+echo  2) YouTube URL: %yt_url%
+echo  3) Spotify URL: %sp_url%
+echo.
+echo  To start downloading hit [ENTER] when all values are defined, otherwise
+echo [ENTER] will go back.
+echo.
+echo  Chose a value to define then hit [ENTER]:
+set /p mam=^>^> 
+if not defined mam (
+	if not defined format (
+       goto main_menu) else (
+          if not defined yt_url (
+             goto main_menu) else (
+		  	 if not defined sp_url (
+             goto main_menu) else (
+					goto manual_audio_matching_download
+          )
+       )
+    )
+)
+if %mam%==1 goto manual_audio_matching_format
+if %mam%==2 goto manual_audio_matching_yt_url
+if %mam%==3 goto manual_audio_matching_sp_url
+echo  Invalid choice. Please try again!
+timeout /t 3 >nul
+goto manual_audio_matching
+
+:manual_audio_matching_format
 set format=
 mode con: cols=80 lines=16
 cls
@@ -1804,60 +1860,68 @@ echo   1) mp3                      4) opus
 echo   2) m4a                      5) ogg
 if %spotDL_ver%==3 (echo   3^) flac                     6^) wav) else (echo   3^) flac)
 echo.
-echo  Hit [ENTER] to got back...
-echo.
 echo  Input the value that corresponds to your choice.
 set /p format=^>^> 
-if not defined format goto main_menu
-if %format%==1 (set format=mp3&& goto sel_youtube)
-if %format%==2 (set format=m4a&& goto sel_youtube)
-if %format%==3 (set format=flac&& goto sel_youtube)
-if %format%==4 (set format=opus&& goto sel_youtube)
-if %format%==5 (set format=ogg&& goto sel_youtube)
-if %format%==6 (if %spotDL_ver%==3 (set format=wav&& goto sel_youtube) else (echo  Sorry, but that feature is only available with spotDL v3&& timeout /t 3 >nul&& goto set_audio_file_format))
+if %format%==1 (set format=mp3&& goto manual_audio_matching)
+if %format%==2 (set format=m4a&& goto manual_audio_matching)
+if %format%==3 (set format=flac&& goto manual_audio_matching)
+if %format%==4 (set format=opus&& goto manual_audio_matching)
+if %format%==5 (set format=ogg&& goto manual_audio_matching)
+if %format%==6 (if %spotDL_ver%==3 (set format=wav&& goto manual_audio_matching) else (echo  Sorry, but that feature is only available with spotDL v3&& timeout /t 3 >nul&& goto set_audio_file_format))
 echo   Invalid input. Try again!
 timeout /t 3 >nul
-goto set_audio_file_format
-:sel_youtube
+goto manual_audio_matching_format
+
+:manual_audio_matching_yt_url
 mode con: cols=66 lines=12
 set yt=
 cls
 echo.
 echo                   -Manual Audio Matching-
+echo                         YouTube URL
 echo.
 echo.
 echo   Input the YouTube song URL. It's form there that we'll
 echo  get the song downloaded from.
-echo   Output audio file format: %format%
 echo.
-echo   To go back just hit [ENTER]
-echo.
-set /p yt= YT^>^> 
-if not defined yt goto set_audio_file_format
-echo "%yt%"|findstr /R "[%%#^&^^^^@^$~!]" 1>nul
+set /p yt_url= YT^>^> 
+if not defined yt_url goto manual_audio_matching
+echo "%yt_url%"|findstr /R "[%%#^&^^^^@^$~!]" 1>nul
 if %errorlevel%==0 (
-	echo.
+    echo.
     echo   Invalid song name: "%link%"
     echo   Please remove special symbols: "%#&^@$~!"
-	timeout /t 6 >nul
-	goto sel_youtube
+    timeout /t 6 >nul
+	 set yt_url=
+    goto manual_audio_matching_yt_url
 )
-:sel_spotifycls
-set spotify=
+goto manual_audio_matching
+
+:manual_audio_matching_sp_url
+set sp_url=
 cls
 echo.
 echo                   -Manual Audio Matching-
+echo                         Spotify URL
 echo.
 echo.
 echo   Input the Spotify song URL. It's form there that we'll
 echo  get the metadata downloaded from.
-echo   Output audio file format: %format%
 echo.
-echo   To go back just hit [ENTER]
-echo.
-set /p spotify=^>^> 
-if not defined spotify goto sel_youtube
-:sel_spotifycls
+set /p sp_url=SP^>^> 
+if not defined sp_url goto manual_audio_matching
+echo "%sp_url%"|findstr /R "[%%#^&^^^^@^$~!]" 1>nul
+if %errorlevel%==0 (
+    echo.
+	 echo   Invalid song name: "%link%"
+	 echo   Please remove special symbols: "%#&^@$~!"
+    timeout /t 6 >nul
+	 set sp_url=
+	 goto manual_audio_matching_sp_url
+)
+goto manual_audio_matching
+
+:manual_audio_matching_download
 cls
 echo.
 echo                   -Manual Audio Matching-
@@ -1867,22 +1931,22 @@ echo   We're now downloading the desired song, with the selected
 echo  metadata. One moment plase...
 echo.
 cls
-set mamo="%yt%|%spotify%"
-if %history%==true (echo %mamo%>>history.txt)
+set mam_download_command="%yt_url%|%sp_url%"
+if %history%==true (echo %mam_download_command%>>history.txt)
 if %debug%==false (
 	if %spotDL_ver%==3 (
-		spotdl %mamo% --output-format %format% --output %curdir%
+		spotdl %mam_download_command% --output-format %format% --output %curdir%
 	) else (
-		spotdl download %mamo% --format %format% --output %curdir% --bitrate %kbps%
+		spotdl download %mam_download_command% --format %format% --output %curdir% --bitrate %kbps%
 	)
 ) else (
 	if %spotDL_ver%==3 (
-		echo spotdl %mamo% --output-format %format% --output %curdir% --log-level DEBUG
-		spotdl %mamo% --output-format %format% --output %curdir% --log-level DEBUG
+		echo spotdl %mam_download_command% --output-format %format% --output %curdir% --log-level DEBUG
+		spotdl %mam_download_command% --output-format %format% --output %curdir% --log-level DEBUG
 		pause
 	) else (
-		echo spotdl download %mamo% --format %format% --output %curdir% --bitrate %kbps% --log-level DEBUG
-		spotdl download %mamo% --format %format% --output %curdir% --bitrate %kbps% --log-level DEBUG
+		echo spotdl download %mam_download_command% --format %format% --output %curdir% --bitrate %kbps% --log-level DEBUG
+		spotdl download %mam_download_command% --format %format% --output %curdir% --bitrate %kbps% --log-level DEBUG
 		pause
 	)
 )
@@ -1896,23 +1960,23 @@ mode con: cols=60 lines=15
 set choice=
 cls
 echo.
-echo                                 -CONTROL PANEL-
+echo                        -CONTROL PANEL-
 echo.
 echo  Welcome back %logged_username%!
 echo.
 echo.
 echo  Available options:
 echo   1) Registered accounts' info
-echo   2) Installation settings
+echo   2) Installation level settings
 echo   3) LogOut
 echo.
 set /p choice=^>^> 
-if %choice%==1 (goto :registered_accounts_info)
-if %choice%==2 (goto :installation_settings)
-if %choice%==3 (goto :login_menu)
+if %choice%==1 (goto registered_accounts_info)
+if %choice%==2 (goto installation_settings)
+if %choice%==3 (goto login_menu)
 echo  You can't leave this field in blank. Try again!
 timeout /t 4 >nul
-goto :control_panel
+goto control_panel
 
 
 :registered_accounts_info
