@@ -323,3 +323,17 @@ ________________________________V2.2________________________________ 18/09/2022
    * Corrected a bug that wouldn't make the upon completion selection feature work...
    * Removed the success and failure info when downloading songs when using spotDL v3. v3 doesn't have errorlevels.
 * Rephrased the about SPOTYdl text, to be consistent in phrase sizing. Hard work, but accomplishable!
+
+
+________________________________V2.3________________________________ 18/09/2022
+* Repaired some bugs on the text file importer, when script &/or imported file were at a directory path containing spaces.
+
+
+________________________________V2.4________________________________ 05/11/2022
+* Manual Audio Matching:
+   * Improved UI & Usage method. You can now define your variables at your own pace. Got the spotify link in the clipboard? Set it first! Same for YouTube link & file format ;)
+* BitRates:
+   * Rephrased bitrate descriptor names.
+* Slight optimizations to the code
+* Users
+   * Fixed a bug when the Admin account doesn't exist.
