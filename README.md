@@ -6,18 +6,19 @@
 
 ### Download spotify songs/playlists with ease!
 
-What's SPOTYdl you may ask. SPOTYdl is a script to help you download songs using spotDL more easilly, and has a couple of new and cool features more than the main project. (spotDL)
+What's SPOTYdl you may ask. SPOTYdl is a script that'l help you download Spotify songs using spotDL more easilly, and has a couple of new and cool features added than spotDL.
 
 ![prtnscrn 1](https://user-images.githubusercontent.com/85069997/173223783-bd2e5198-451d-4489-aaf5-8b675072fd68.png)
 
 ### To download SPOTYdl, ![**click here**]([https://github.com/GabiBrawl/SPOTYdl/blob/main/server/script.bat](https://github.com/GabiBrawl/SPOTYdl/releases/tag/SPOTYdl_v2.0)).
 
 # Features
-### Download history
-Yup! We do have it here too! The history is saved to history.txt
+### Downloads history
+Yup! We do have it here too! The history is saved into history.txt. If you save this file since the begining, you can import it later and download all your songs, in the exact same way!!
 ![Screenshot (391)](https://user-images.githubusercontent.com/85069997/163460646-517b4f35-1f84-4c25-b135-766f69229389.png)
 
 ### List all downloaded songs to a text file
+Doesn't work as well as the history file when importing (ie: you matched the audio manually from youtube, here it won't be saved)
 ![Screenshot (387)](https://user-images.githubusercontent.com/85069997/163459542-d1426a28-c36d-48fa-8d0c-9ec4bb859f4a.png)
 
 ### Txt file importer!
