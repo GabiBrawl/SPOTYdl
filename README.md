@@ -52,7 +52,7 @@ Didn't like the new version? Don't wait and roll back!
 ### Settings
 Wanna disable a feature? You've got a settings menu for that!
 
-![Settings#1](https://user-images.githubusercontent.com/85069997/163815077-b0f64fef-0dc1-4a08-a8a3-60a1ce1682a8.png)
+![Settings#1](https://user-images.githubusercontent.com/85069997/209470789-0ed593aa-19a8-4ab4-8e2e-1ecfa237942a.png)
 
 
 ### Help
