@@ -40,7 +40,7 @@ You don't need to come back here everytime you wanna check for updates... there'
 
 There are two update channels: the Stable and the Beta.
 
-![Update#2](https://user-images.githubusercontent.com/85069997/163462749-110dd6fb-9d06-4d39-905f-1be848d00be6.png)
+![Update#2](https://user-images.githubusercontent.com/85069997/209477724-9da0ceb0-c40e-4048-aef5-9483d6c93253.png)
 
 So why don't I use only the beta you may ask, the Beta is more buggy than the Stable version... So if you wanna use this program daily, I suggest you the Stable channel. If you wanna be the first to try new features, chose the Beta!1!
 
