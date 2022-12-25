@@ -47,7 +47,7 @@ So why don't I use only the beta you may ask, the Beta is more buggy than the St
 ### Swap versions
 Didn't like the new version? Don't wait and roll back!
 
-![Swap#1](https://user-images.githubusercontent.com/85069997/163814898-39ab48eb-6448-46ab-a933-ef0af4903b67.png)
+![Swap#1](https://user-images.githubusercontent.com/85069997/209470984-1370f797-d17f-4e58-ada4-92cc4f39c766.png)
 
 ### Settings
 Wanna disable a feature? You've got a settings menu for that!
