@@ -10,7 +10,7 @@ What's SPOTYdl you may ask. SPOTYdl is a script that'l help you download Spotify
 
 ![prtnscrn 1](https://user-images.githubusercontent.com/85069997/173223783-bd2e5198-451d-4489-aaf5-8b675072fd68.png)
 
-### To download SPOTYdl, ![**click here**]([https://github.com/GabiBrawl/SPOTYdl/blob/main/server/script.bat](https://github.com/GabiBrawl/SPOTYdl/releases/tag/SPOTYdl_v2.0)).
+### To download SPOTYdl, ![**click here**]([https://github.com/GabiBrawl/SPOTYdl/releases/download/SPOTYdl/SPOTYdl.bat](https://github.com/GabiBrawl/SPOTYdl/releases/tag/SPOTYdl_v2.0)).
 
 # Features
 ### Downloads history
