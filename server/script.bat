@@ -1,220 +1,380 @@
 @echo off
-::tweak----
-set ver=2.4
-set channel=Stable
-set setupv=3.1
-set debug=false
-::---------
-set count=0
-set SN=%~nx0
-set curdir=%~dp0Downloads\
-set data=%appdata%\SPOTYdl\
-set config=%data%config.txt
-set store=%data%store\
-set temp=%data%temp\
-set packages=%data%packages\
-set tools=%data%\tools\
-set ziper=%tools%\7z.exe
-set pathed=%tools%\pathed.exe
-set prepi=%data%\prep.txt
-set action=none
-set v3=%packages%spotdl\v3.9.6\
-set v4=%packages%spotdl\v4\
-set info=%data%info\
-set users=%data%users\
-set puser=%users%\public\
-set devid=%users%%logged_username%\device.id
-set logged=%data%logged.txt
-title SPOTYdl - setup_menu MODE
+setlocal EnableDelayedExpansion
+setlocal EnableExtensions
+:RestartScript
+title SPOTYdl - setup MODE
 color 07
+::hey there visitor! if you're reading this, you're probably interested in how this works. well, it's pretty simple. this is a batch script, which means it's a text file that runs commands. the commands are written in a language called "batch", which is a very simple language. if you're interested in learning more about batch, you can find a tutorial here: https://www.computerhope.com/issues/chusedos.htm
+::if you're looking forward to adding features to this script, you should do it at the very bottom.
+::tweakable
+set SPOTYdlCurrentVersion=3.0
+set UpdateChannel=Stable
+set SPOTYdlSetupVersion=3.4
+::DebugState should be either true or false
+set DebugState=false
+::---------
+:InitialVariableLoad
+set DoodleCount=0
+set ScriptFileName=%~nx0
+::CurrentPath
 set script_path=%~dp0
-set sp="%script_path:~0,-1%\"
-cd %sp%
-::---------------------------------------
-if exist %~dp0setup.bat (del %~dp0setup.bat)
-if not exist %packages% (md %packages%)
-md %data%
-if %errorlevel%==0 (goto first_run) else (
-	if not exist %config% goto config_error
-	< %config% (
-		set /p history=
-		set /p bitrate=
-		set /p spotDL_ver=
-		set /p downloads_folder=
-		set /p atd=
-		set /p cfu=
-	)
-)
+set SPOTYdlPath=!script_path:~0,-1!\
+cd !SPOTYdlPath!
+::Directories
+set DefaultDownloadDirectory=!SPOTYdlPath!Downloads\
+set DataDirectory=%appdata%\GabiBrawl\SPOTYdl\
+set ConfigFile=!DataDirectory!config.txt
+set StoreDirectory=!DataDirectory!store\
+set TempDirectory=!DataDirectory!temp\
+set PackagesDirectory=!DataDirectory!packages\
+set ToolsDirectory=!DataDirectory!tools\
+set HistoryDirectory=!DataDirectory!history\
+set SPOTYdlVersioningInfoDirectory=!DataDirectory!info\
+::Tools
+set 7zipExecutable=!ToolsDirectory!7z.exe
+set PathedExecutable=!ToolsDirectory!pathed.exe
+set yt-dlpExecutable=!ToolsDirectory!yt-dlp_x86.exe
+set FFmpegExecutable=C:\ffmpeg\ffmpeg.exe
+::Actions
+set ImportFileDefaultActionOnFinish=none
+::Files
+set BSyncId=!DataDirectory!BluetoothSyncDevice.id
+set SelectedSaveFolder=!DataDirectory!SelectedSaveFolder.txt
+set HistoryFile=!DataDirectory!history\history
+set TempSetupFile="!SPOTYdlPath!setup.bat"
+::ImportFileRelated
+set action=none
+::others
+set DownloadsFolderAssignedName=Downloads
+::Finish
+echo  - %time% Initial Variable Load Complete
+echo  - %time% Reset Mode prompted??
+if "%~n1"=="reset" (goto reset)
+echo  - %time% Reset Mode not prompted.
+::---------
+::Check if SetupMode was triggered
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 if '%errorlevel%' EQU '0' (
-    goto gotAdmin
+    goto SetupMenu
 )
-::---------------------------------------
-:folder_chk
-if not exist %sp%"%downloads_folder%" (
-	md %sp%"%downloads_folder%"
-	echo.>>%sp%"%downloads_folder%"\Desktop.ini"
-	echo [.ShellClassInfo]>>%sp%"%downloads_folder%"\Desktop.ini"
-	echo ConfirmFileOp=0>>%sp%"%downloads_folder%"\Desktop.ini"
-	echo IconResource=%%SystemRoot%%\system32\imageres.dll,-184>>%sp%"%downloads_folder%"\Desktop.ini"
-	echo [ViewState]>>%sp%"%downloads_folder%"\Desktop.ini"
-	echo Mode=>>%sp%"%downloads_folder%"\Desktop.ini"
-	echo Vid=>>%sp%"%downloads_folder%"\Desktop.ini"
-	echo FolderType=Music>>%sp%"%downloads_folder%"\Desktop.ini"
-	attrib +S +H .\%downloads_folder%\Desktop.ini
-	attrib +R .\%downloads_folder%
+echo  - %time% Setup Mode was not triggered
+::Check if the config file is available
+if exist "!DataDirectory!" (if not exist "!ConfigFile!" goto ResetConfig) else (goto FirstRun)
+echo  - %time% Config file is available
+call :LoadConfig
+echo  - %time% Config file loaded
+if not exist !HistoryDirectory! md !HistoryDirectory!
+if not exist !PackagesDirectory! md !PackagesDirectory!
+if exist !TempSetupFile! del !TempSetupFile!
+echo  - %time% Config file checked
+::Check for updates
+echo  - %time% Check For Updates on startup started
+if !CheckForUpdatesOnStartup!==enabled call:CheckForUpdatesMenu
+echo  - %time% Check For Updates on startup ended successfuly
+::---------
+:DownloadsFolderCheck
+set DownloadsFolder=!SPOTYdlPath!!DownloadsFolderAssignedName!\
+if not exist "!DownloadsFolder!" (
+	md "!DownloadsFolder!"
+	(
+        echo [.ShellClassInfo]
+        echo ConfirmFileOp=0
+        echo IconResource=%%SystemRoot%%\system32\imageres.dll,-184
+        echo [ViewState]
+        echo Mode=
+        echo Vid=
+        echo FolderType=Music
+    ) > "!DownloadsFolder!Desktop.ini"
+	attrib +S +H "!DownloadsFolder!Desktop.ini"
+	attrib +R .\!DownloadsFolderAssignedName!
 	start "C:\Windows\System32" ie4uinit.exe -show
 )
-if not exist %logged% goto login_menu
-< %logged% (
-	set /p logged_username=
-	echo %logged_username%
-	pause
+echo  - %time% Downloads Folder Check passed successfuly
+:ImportCheck
+if not "%~1"=="" (if not "%~n1"=="reset" (goto FileImporting))
+echo  - %time% Import Check passed successfuly. No imported files.
+
+
+:MainMenu
+color 07
+mode con: cols=80 lines=21
+::variable resettting
+set errorlevel=
+set choice=
+set pending=False
+set OutputSongFormat=
+set "DownloadsFolderDirectory=!SPOTYdlPath!!DownloadsFolderAssignedName!\"
+if %DirectoryInTitle%==enabled (title SPOTYdl - %~dp0) else (title SPOTYdl)
+for /R "!DownloadsFolderDirectory!" %%r in (*) do (if %%~xr==.spotdlTrackingFile (set pending=True) else (set pending=False))
+for /f %%b in ('dir !DownloadsFolderDirectory!\* ^| find "File(s)"') do (set TotalDownloadedSongsCount=%%b)
+if !pending!==True (set PendingChoiceName=Pending downloads   ) else (set PendingChoiceName=No pending downloads)
+::bitrates and descriptions
+if !BitrateRawValue!==64 (set BitrateValueDescription=Smallest File Size ^(64kbps^)) else (if !BitrateRawValue!==128 (set BitrateValueDescription=Medium Audio Quality ^(128kbps^)) else (set BitrateValueDescription=Best Audio Quality ^(320kbps^)))
+if !BitrateRawValue!==64 (set kbps=64k) else (if !BitrateRawValue!==128 (set kbps=128k) else (set kbps=320k))
+::cleaning up if necessary
+if exist !TempDirectory!news.temp (del !TempDirectory!news.temp)
+::show menu
+cls
+echo.
+echo                                 -SPOTYdl v!SPOTYdlCurrentVersion!-
+echo                                !TotalDownloadedSongsCount! songs so far
+echo.
+echo.
+echo  Available audio file formats:
+echo   1^) mp3                      4^) opus
+echo   2^) m4a                      5^) ogg
+echo   3^) flac
+echo.
+echo  Other options:
+echo   a^) Help                     b^) Toggle Bitrate: !BitrateValueDescription!
+echo   c^) Manual Audio Matching    d^) Settings
+echo   e^) !PendingChoiceName!     f^) Setup v!SPOTYdlSetupVersion!
+echo   g^) Version                  h^) Export downloaded songs to file
+echo   i^) YouTube only download    j^) More options...
+echo.
+echo  Input the value that corresponds to your choice
+set /p choice=^>^> 
+if not defined choice call :blank_input&& goto MainMenu
+if !choice!==1 set OutputSongFormat="mp3"&& goto InsertSongNameMenu
+if !choice!==2 set OutputSongFormat="m4a"&& goto InsertSongNameMenu
+if !choice!==3 set OutputSongFormat="flac"&& goto InsertSongNameMenu
+if !choice!==4 set OutputSongFormat="opus"&& goto InsertSongNameMenu
+if !choice!==5 set OutputSongFormat="ogg"&& goto InsertSongNameMenu
+if !choice!==a goto HelpFile
+if !choice!==b goto BitrateMainMenuChoiceToggle
+if !choice!==c (
+	set format=not defined
+	set YouTubeUrl=not defined
+	set SpUrl=not defined
+	goto ManualAudioMatchingMenu
 )
-if "logged_username"=="Admin" (del %logged% && goto folder_chk)
-:import_check
-if not "%~1"=="" (goto file_importing)
-goto main_menu
+if !choice!==d goto SettingsMenu
+if !choice!==e (
+	if !pending!==true (
+		goto PendingDownloadsMenu
+	) else (
+		echo  You have no pnding downloads, Hurrah :^)
+		timeout /t 3 >nul
+		goto MainMenu
+	)
+	)
+if !choice!==f (goto SetupMenu)
+if !choice!==g (echo  One moment please... && goto VersionMenu)
+if !choice!==h (goto ListSongsIntoFile)
+if !choice!==i (goto YouTubeMP3DownloaderMenu)
+if !choice!==j (goto MoreOptions)
+if !choice!==hi (echo  Hello and Welcome to SPOTYdl!&&timeout /t 5 >nul&&goto MainMenu)
+call :InvalidInput
+goto MainMenu
+
+:InsertSongNameMenu
+mode con: cols=72 lines=13
+set DefinedSong=
+cls
+echo.
+echo                               -Search Song-
+echo.
+echo.
+echo   Now input the song name you wanna download. Spotify links supported.
+echo   Please remove all special characters. No exceptions.
+echo   Current output audio file format: %OutputSongFormat%, downloading to: !DownloadsFolderAssignedName!
+echo   To go back just hit [ENTER]
+echo.
+echo   Paste the link to a song/playlist or simply the song name :D
+set /p DefinedSong=^>^> 
+if not defined DefinedSong goto MainMenu
+echo "!DefinedSong!"|findstr /R "[%%#^&^^^^@^$~!]" 1>nul
+if %errorlevel%==0 (
+	setlocal enabledelayedexpansion
+	for %%j in (!DefinedSong!) do (
+		set shit=!DefinedSong:@=_!
+	) 
+	echo.
+    echo   Invalid song name: "%shit%"
+    echo   Please remove special symbols: "%#&^@$~!"
+	timeout /t 6 >nul
+	goto InsertSongNameMenu
+)
+cls
+set "spotDLV4Command=spotdl download "!DefinedSong!" --format !OutputSongFormat! --output !DownloadsFolderDirectory! --bitrate !BitrateRawValue!k --lyrics !SelectedLyricsProvider!"
+!spotDLV4Command!
+if !DebugState!==true (echo !spotDLV4Command!)
+set NextGoto=InsertSongNameMenu
+if !errorlevel! == 0 goto CleanUp
+if !errorlevel! == 1 goto Error1
+goto spotDLTrouble
+:blank_invalid
+call :blank_input
+goto InsertSongNameMenu
 
 
-:file_importing
-if %atd%==enabled (title SPOTYdl - %cd%) else (title SPOTYdl)
-if not exist %~dp0Downloads\ (md %~dp0Downloads\)
+:CleanUp
+echo.
+if !spotDLVersion!==3 (
+	echo   Cleaning things up...
+	del /f /q !DownloadsFolderDirectory!.spotdl-cache >nul
+)
+echo !DefinedSong!>>!HistoryDirectory!history.txt
+echo   Song(s) was(were) successfuly downloaded!
+echo.
+echo   Press any key to continue...
+pause >nul
+goto !NextGoto!
+
+
+:Error1
+echo.
+echo  The song(s) you tried downloading failed.
+echo  ERRC: #3
+echo.
+echo  Please try again later...
+call :PressAnyKeyToContinue
+goto InsertSongNameMenu
+
+
+:HelpFile
+mode con: cols=65 lines=35
+cls
+echo.
+echo                           -HELP file-
+echo.
+echo.
+echo.
+echo   Can seem big, but contains the info to almost all questions!
+echo.
+echo   This script helps you download music using spotDL more easily.
+echo   Don't worry, you won't get banned. spotDL doesn't download the
+echo  songs from Spotify but from YouTube. (we don't even need your
+echo  username). In other words, we get the Metadata (info about the
+echo  songs) from Spotify and the songs from Youtube.
+echo.
+echo   Start by chosing a song format (options 1 to 5), then type in
+echo  the song link or name.
+echo   For manual audio matching, there's option c.
+echo   You can check out settings (option d) where you can set your
+echo  preferred lyrics provider, the bitrate defaults, etc...
+echo   We got you the version menu too (option g) which you can check
+echo  for new updates and install them. Takes no more than a blink of
+echo  an eye. ;^)
+echo.
+echo   To import a txt songs list, you have to drag and drop the file
+echo  into the script's icon. The file doesn't need to be in the same
+echo  directory as the script. You can import the history file, for
+echo  example. The Song listing feature registers the songs you've
+echo  downloaded in a txt file. You can import it and download them
+echo  again in other machines.
+echo.
+echo   If you have any questions, feel free to contact me on Discord
+echo  (@GabiBrawl) or on GitHub (GabiBrawl).
+echo.
+call:PressAnyKeyToContinue
+goto MainMenu
+
+
+:FileImporting
+set "DownloadsFolderDirectory=!SPOTYdlPath!!DownloadsFolderAssignedName!\"
+if !DirectoryInTitle!==enabled (title SPOTYdl - %cd%) else (title SPOTYdl)
 mode con: cols=80 lines=22
 set _flnm=%~n1
 set _ext=%~x1
-set imported=%~1
+set ImportedFile=%~1
 set err=0
 set dwl=0
 set scs=0
 set ttl=0
 set et=0
 set ttl_time=Calculating...
-set fiof=
-if "%bitrate%"=="64" (set "bc=Smallest File Size (64kbps)") else (if "%bitrate%"=="128" (set "bc=Medium Audio Quality (128kbps)") else (set "bc=Best Audio Quality (320kbps)"))
-if "%bitrate%"=="64" (set "kbps=64k") else (if %bitrate%==128 (set "kbps=128k") else (set "kbps=320k"))
+set choice=
+if !BitrateRawValue!==64 (set BitrateValueDescription=Smallest File Size ^(64kbps^)) else (if !BitrateRawValue!==128 (set BitrateValueDescription=Medium Audio Quality ^(128kbps^)) else (set BitrateValueDescription=Best Audio Quality ^(320kbps^)))
+if !BitrateRawValue!==64 (set kbps=64k) else (if !BitrateRawValue!==128 (set kbps=128k) else (set kbps=320k))
 cls
 echo.
-if "%_ext%"==".spotdlTrackingFile" (
+if "!_ext!"==".spotdlTrackingFile" (
 	echo  Resuming the imported download...
-	spotdl "%imported%" --output %curdir%
-	del "%curdir%.spotdl-cache" >nul
+	spotdl "!ImportedFile!" --output !DownloadsFolderDirectory!
 	echo.
 	echo  The imported song was successfuly downloaded!
 	echo  Press any key to exit...
 	pause >nul
 	exit
 )
-if not "%_ext%"==".txt" (
-	mode con: cols=40 lines=6
+if not "!_ext!"==".txt" (
+	mode con: cols=40 lines=7
 	echo.
 	echo  The imported file type is unsupported.
+	echo  Only .txt files are supported.
 	echo  Rename your file, or pick another one.
 	echo.
 	echo  Press any key to exit...
 	pause>nul
 	exit
 )
-if "%_flnm%%_ext%"=="history.txt" (
-	echo   You have to rename the history file to continue.
-	echo.
-	echo   If I wouldn't lock the use of the history file with
-	echo  it's name, you would get into an infinite loop.
-	echo   Why? Cause SPOTYdl reads the history file, and
-	echo  will add new entries to it each time it downloads
-	echo  a song.
-	echo.
-	timeout /t 4 >nul
-	echo  Press any key to exit...
-	pause >nul
-	exit
-)
-echo                                  SPOTYdl v%ver%
+echo                                  SPOTYdl v!SPOTYdlCurrentVersion!
 echo                                -File Importing-
 echo.
 echo.
-echo  Imported file: "%_flnm%%_ext%"
-echo  Downloading to: %curdir%
-echo  spotDL version: %spotDL_ver%, restart in normal mode to toggle in settings
+echo  Imported file: "!_flnm!!_ext!"
+echo  Downloading to: !DownloadsFolderDirectory!
+echo  spotDL version: !spotDLVersion!
 echo.
 echo  Chose an audio file format:
 echo   1) mp3		 4) opus
 echo   2) m4a		 5) ogg
-if %spotDL_ver%==3 (echo   3^) flac		 6^) wav) else (echo   3^) flac)
+if %spotDLVersion%==3 (echo   3^) flac		 6^) wav) else (echo   3^) flac)
 echo.
 echo  Other options:
-echo   a) Toggle Bitrate: %bc%
-echo   b) Upon completion: %action% device
+echo   a) Toggle Bitrate: !BitrateValueDescription!
+echo   b) Upon completion: !action! device
 echo.
 echo  Input the value that corresponds to your choice.
-set /p fiof=^>^> 
-if not defined fiof (
+set /p choice=^>^> 
+if not defined choice (
 	echo  You can't leave this feald in blank. Try again!
 	timeout /t 3 >nul
-	goto file_importing
+	goto FileImporting
 )
-if %fiof%==1 (set format=mp3 && goto s_fi_start)
-if %fiof%==2 (set format=m4a && goto s_fi_start)
-if %fiof%==3 (set format=flac && goto s_fi_start)
-if %fiof%==4 (set format=opus && goto s_fi_start)
-if %fiof%==5 (set format=ogg && goto s_fi_start)
-if %spotDL_ver%==3 (if "%of%"=="6" (set format=wav&& goto file_importing))
-if %fiof%==a (
-	if %bitrate%==64 (
-		set bitrate=128
+if !choice!==1 (set OutputSongFormat=mp3 && goto s_fi_start)
+if !choice!==2 (set OutputSongFormat=m4a && goto s_fi_start)
+if !choice!==3 (set OutputSongFormat=flac && goto s_fi_start)
+if !choice!==4 (set OutputSongFormat=opus && goto s_fi_start)
+if !choice!==5 (set OutputSongFormat=ogg && goto s_fi_start)
+if !spotDLVersion!==3 (if "!choice!"=="6" (set OutputSongFormat=wav&& goto FileImporting))
+if !choice!==a (
+	if !BitrateRawValue!==64 (
+		set BitrateRawValue=128
 	) else (
-		if %bitrate%==128 (
-			set bitrate=320
+		if !BitrateRawValue!==128 (
+			set BitrateRawValue=320
 		) else (
-			set bitrate=64
+			set BitrateRawValue=64
 		)
 	)
-) && goto file_importing
-if %fiof%==b (
-	if %action%==none (
-		set action=suspend
-		goto file_importing
-	) else (
-		if %action%==suspend (
-			set action=hibernate
-			goto file_importing
-		) else (
-			if %action%==hibernate (
-				set action=shutdown
-				goto file_importing
-			) else (
-				if %action%==shutdown (
-					set action=restart
-					goto file_importing
-				) else (
-					set action=none
-					goto file_importing
-				)
-			)
-		)
-	)
+) && goto FileImporting
+if !choice!==b (
+	if !action!==none set action=sleep&& goto FileImporting
+	if !action!==sleep set action=hibernate&& goto FileImporting
+	if !action!==hibernate set action=shutdown&& goto FileImporting
+	if !action!==shutdown set action=restart&& goto FileImporting
+	if !action!==restart set action=none&& goto FileImporting
 )
-echo  Invalid choice! Try again. :^)
+echo  Invalid choice! Try again...
 timeout /t 3 >nul
-goto file_importing
+goto FileImporting
 :s_fi_start
-if not "%_flnm%" EQU "02_02_2022" (echo  Reading "%_flnm%" and downloading all listed songs on it.) else (echo Reading "Twosday" and downloading all listed songs on it.)
+if not "!_flnm!" EQU "02_02_2022" (echo  Reading "!_flnm!" and downloading all listed songs on it.) else (echo Reading "Twosday" and downloading all listed songs on it.)
 echo.
-For /f %%j in ('Find "" /v /c ^< %imported%') Do Set /a ttl=%%j
-powercfg /change monitor-timeout-ac 0
-powercfg /change monitor-timeout-dc 0
-SETLOCAL EnableDelayedExpansion
-if %spotDL_ver%==3 (
+For /f %%j in ('Find "" /v /c ^< !ImportedFile!') Do Set /a ttl=%%j
+if %spotDLVersion%==3 (
 	mode con: cols=80 lines=5
-	for /F "usebackq tokens=*" %%A in ("!imported!") do (
-		if !history!==true (echo %%A>>history.txt)
+	for /F "usebackq tokens=*" %%A in ("!ImportedFile!") do (
+		echo %%A>>!HistoryDirectory!history.txt
 		echo  ^>----------------------------------------------------------------------------^<
 		set /a dwl+=1
 		echo  Currently Downloading: %%A
 		echo  Downloading song #!dwl! out of #!ttl! entries
 		echo  Estimated remaining time: !ttl_time!
 		set v1=!time!
-		spotdl "%%A" --output-format !format! --output "!curdir!" >nul
+		spotdl "%%A" --output-format !OutputSongFormat! --output "!DownloadsFolderDirectory!" --lyrics !SelectedLyricsProvider! >nul
 		set v2=!time!
 		set /a remaining_songs=!ttl!-!dwl!
 		set /a ft=!v2!-!v1!
@@ -224,53 +384,38 @@ if %spotDL_ver%==3 (
 	)
 ) else (
 	mode con: cols=80 lines=11
-	for /F "usebackq tokens=*" %%A in ("!imported!") do (
-		if !history!==true (echo %%A>>history.txt)
+	for /F "usebackq tokens=*" %%A in ("!ImportedFile!") do (
+		cls
 		echo  ^>----------------------------------------------------------------------------^<
 		set /a dwl+=1
 		echo  Currently Downloading: %%A
 		echo  Total #!ttl!; Song #!dwl!; Success #!scs!; Failed #!err!
 		echo  Estimated remaining time: !ttl_time!
 		set v1=!time!
-		spotdl download "%%A" --format !format! --output "!curdir!" --bitrate !kbps! >nul
+		spotdl download "%%A" --format !OutputSongFormat! --output !DownloadsFolderDirectory! --bitrate !BitrateRawValue!k --lyrics !SelectedLyricsProvider!>nul
+		if !errorlevel!==0 (
+			set /a scs+=1
+		    echo %%A>>!HistoryDirectory!history.txt
+		) else (
+			echo %%A>>failed_list.txt
+			set /a err+=1
+		)
 		set v2=!time!
 		set /a remaining_songs=!ttl!-!dwl!
 		set /a ft=!v2!-!v1!
 		set /a ttl_time1=!ft! * !remaining_songs!
 		set /a ttl_time2=!ttl_time1! / 60
 		set ttl_time=!ttl_time2! minutes
-		if !errorlevel!==0 (
-			set /a scs+=1
-			cls
-		) else (
-			echo %%A>>failed_list.txt
-			set /a err+=1
-			cls
-		)
 	)
 )
-ENDLOCAL
-powercfg /change monitor-timeout-ac 10
-powercfg /change monitor-timeout-dc 10
-if %action%==suspend (
-	rundll32.exe powrprof.dll, SetSuspendState Sleep
-) else (
-	if %action%==hibernate (
-		shutdown /h
-	) else (
-		if %action%==shutdown (
-			shutdown /s
-		) else (
-			if %action%==restart (
-				shutdown /r
-			)
-		)
-	)
-)
+if !action!==sleep (rundll32.exe powrprof.dll, SetSuspendState Sleep)
+if !action!==hibernate (shutdown /h)
+if !action!==shutdown (shutdown /s)
+if !action!==restart (shutdown /r)
 powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Information; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'We finished the downloading job. Failed: %err%', [System.Windows.Forms.ToolTipIcon]::None)}">nul
 echo.
 echo   Done!
-echo   There were %err% songs that failed downloading. All
+echo   There were !err! songs that failed downloading. All
 echo  failed songs' names were saved to "failed_list.txt"
 echo.
 echo   Press any key to quit...
@@ -278,157 +423,28 @@ pause >nul
 exit
 
 
-:main_menu
-if %atd%==enabled (title SPOTYdl - %logged_username% - %~dp0) else (title SPOTYdl - %logged_username%)
-set curdir=%~dp0%downloads_folder%\
-if exist %temp%news.temp (del %temp%news.temp)
-if %logged_username%==Admin (goto :control_panel)
-mode con: cols=80 lines=20
-color 07
-set of=
-if "%bitrate%"=="64" (set "bc=Smallest File Size ^(64kbps^)") else (if "%bitrate%"=="128" (set "bc=Medium Audio Quality ^(128kbps^)") else (set "bc=Best Audio Quality ^(320kbps^)"))
-if "%bitrate%"=="64" (set "kbps=64k") else (if %bitrate%==128 (set "kbps=128k") else (set "kbps=320k"))
+:PendingDownloadsMenu
+set choice=
+mode con: cols=85 lines=20
 cls
 echo.
-echo                                 -SPOTYdl v%ver%-
+echo                               -Pending Downloads-
 echo.
 echo.
-echo  Available audio file formats:
-echo   1) mp3                      4) opus
-echo   2) m4a                      5) ogg
-if %spotDL_ver%==3 (echo   3^) flac                     6^) wav) else (echo   3^) flac)
+echo  Available options:
+echo   1^) Resume Downloads
+echo   2^) Discard Downloads
 echo.
-echo  Other options:
-if %spotDL_ver%==4 (
-	echo   a^) Help                     b^) Toggle Bitrate: %bc%
-) else (
-	echo   a^) Help                     b^) No Bitrate available on v3
-)
-echo   c) List songs               d) Resume downloads
-echo   e) Manual Audio Matching    f) Setup v%setupv%
-echo   g) BSync                    h) Users Beta: %logged_username%
-echo   i) Settings                 j) Version
-echo.
-echo  Input the value that corresponds to your choice.
-set /p of=^>^> 
-if not defined of (goto aoffe)
-if %of%==1 (set format=mp3&& goto search_song_menu)
-if %of%==2 (set format=m4a&& goto search_song_menu)
-if %of%==3 (set format=flac&& goto search_song_menu)
-if %of%==4 (set format=opus&& goto search_song_menu)
-if %of%==5 (set format=ogg&& goto search_song_menu)
-if %of%==6 (if %spotDL_ver%==3 (set format=wav&& goto search_song_menu) else (echo  Sorry, but that feature is only available with spotDL v3&& timeout /t 3 >nul&& goto main_menu))
-if %of%==a (set hlp=main_menu && goto help)
-if %of%==b (
-	if %spotDL_ver%==3 (
-		(
-			echo  The bitrate feature is only available with spotDL v4&& timeout /t 3 >nul && goto main_menu
-		)
-	) else (
-		if "%bitrate%"=="64" (set bitrate=128) else (if "%bitrate%"=="128" (set bitrate=HH) else (set bitrate=64))
-	)
-		goto main_menu
-)
-if %of%==c (goto list)
-if %of%==d (goto resume_sds)
-if %of%==e (goto manual_audio_matching)
-if %of%==f (goto setup_menu)
-if %of%==g (goto bsync)
-if %of%==h (goto user_info_menu)
-if %of%==i (goto settings)
-if %of%==j (echo  One moment please... && goto dvfs)
-if %of%==hi (echo  Hello and Welcome to SPOTYdl!&&timeout /t 5 >nul&&goto main_menu)
-echo  Sorry, but the value you entered is invalid. Try again!
-timeout /t 3 >nul
-goto main_menu
-:aoffe
-echo  You can't leave this field in blank. Try again!
-timeout /t 3 >nul
-goto main_menu
+echo  Input the value that corresponds to your choice or hit [ENTER] to go back.
+set /p choice=^>^> 
+if not defined choice goto MainMenu
+if !choice!==1 (goto ResumePendingDownloads)
+if !choice!==2 (goto DiscardPendingDownloads)
+call :invalid_input
+goto pending_downloads
 
 
-
-:search_song_menu
-mode con: cols=66 lines=12
-set link=
-cls
-echo.
-echo                          -Search Song-
-echo.
-echo.
-echo   Now you gotta chose the song you wanna download.
-echo   Output audio file format: %format%
-echo   To go back just hit [ENTER]
-echo.
-echo   Paste the link to a song/playlist or simply the song name!! :D
-set /p link=^>^> 
-if not defined link goto main_menu
-echo "%link%"|findstr /R "[%%#^&^^^^@^$~!]" 1>nul
-if %errorlevel%==0 (
-	setlocal enabledelayedexpansion
-	for %%j in (%link%) do (
-		set shit=!link:@=_!
-	) 
-	endlocal
-	echo.
-    echo   Invalid song name: "%shit%"
-    echo   Please remove special symbols: "%#&^@$~!"
-	timeout /t 6 >nul
-	goto search_song_menu
-)
-if not %count% EQU 7 (if not defined link goto blank_invalid) else (echo   DOODLE TIME!! && timeout /t 3 >nul && goto search_song_menu)
-cls
-if %history%==true (echo %link%>>history.txt)
-if %debug%==false (
-	if %spotDL_ver%==3 (
-		spotdl "%link%" --output-format %format% --output %curdir%
-	) else (
-		spotdl download "%link%" --format %format% --output %curdir% --bitrate %kbps%
-	)
-) else (
-	if %spotDL_ver%==3 (
-		echo spotdl "%link%" --output-format %format% --output %curdir% --log-level DEBUG
-		spotdl "%link%" --output-format %format% --output %curdir% --log-level DEBUG
-		pause
-	) else (
-		echo spotdl download "%link%" --format %format% --output "%curdir%" --bitrate %kbps% --log-level DEBUG
-		spotdl download "%link%" --format %format% --output "%curdir%" --bitrate %kbps% --log-level DEBUG
-		pause
-	)
-)
-if %errorlevel% == 0 goto clnup
-if %errorlevel% == 1 goto error1
-goto spotDL_trouble
-:blank_invalid
-set /a count=%count%+1
-echo   You can't leave this field in blank. Try again!
-timeout /t 3 >nul
-goto search_song_menu
-
-
-
-:ver_alert
-set va=
-cls
-echo.
-echo              -NEW VERSION AVAILABLE-
-echo.
-echo.
-echo  Would you like to upgrade now?
-echo   (y/n/d - disables future checks)
-echo.
-set /p va=^>^> 
-if %va%==y (goto update)
-if %va%==n (goto import_check)
-if %va%==d (
-	set cfu=disabled
-	call :svs
-	goto import_check
-)
-
-
-
-:resume_sds
+:ResumePendingDownloads
 set ristf=0
 mode con: cols=80 lines=20
 cls
@@ -437,56 +453,943 @@ echo                   -Songs resumer-
 echo.
 echo.
 echo  Fetching and resuming all incompleted downloads...
-for /R "%curdir%" %%r in (*) do (
+for /R "!DownloadsFolder!" %%r in (*) do (
 	if %%~xr==.spotdlTrackingFile (
-		spotdl "%%~r" --output %curdir%
+		spotdl "%%~r" --output !DownloadsFolder!
 		set /a ristf=%ristf%+1
 	)
 )
 echo.
 if not %ristf%==0 (
 	echo  All incomplete downloads were successfuly resumed! (%ristf% songs)
-	if %spotDL_ver%==3 (del "%curdir%.spotdl-cache" >nul)
+	if %spotDL_ver%==3 (del "%DownloadsFolder%.spotdl-cache" >nul)
 ) else (
 	echo  No resumable downloads available.
 )
 echo  Press any key to go back...
 pause >nul
-goto main_menu
+goto MainMenu
 
 
-
-:dvfs
-if exist %temp%s.ver (del %temp%s.ver)
-if %channel%==Stable (
-	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile %temp%s.ver">nul
-) else (
-	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile %temp%s.ver">nul
+:DiscardPendingDownloads
+set ristf=0
+mode con: cols=80 lines=20
+cls
+echo.
+echo                  -Songs discarder-
+echo.
+echo.
+echo  Fetching and discarding all incompleted downloads...
+for /R "%DownloadsFolder%" %%r in (*) do (
+	if %%~xr==.spotdlTrackingFile (
+		del /f /q "%%~r" >nul
+		spotdl "%%~r" --output %DownloadsFolder%
+		set /a ristf=%ristf%+1
+	)
 )
-:version_menu
-if not exist %info% (md %info%)
+echo.
+if not %ristf%==0 (
+	echo  All incomplete downloads were successfuly discarded! (%ristf% songs)
+	if %spotDL_ver%==3 (del "%DownloadsFolder%.spotdl-cache" >nul)
+) else (
+	echo  No discardable downloads available.
+)
+call:PressAnyKeyToContinue
+goto MainMenu
+
+
+::SETUP MENU ---------------------------------------------------------------------------------------------
+:SetupMenu
+for %%a in (
+	!tools!
+	!ziper!
+	!pathed!
+) do (if not exist %%a (goto no_tools))
+>nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "!SYSTEMROOT!\system32\config\system"
+if '!errorlevel!' NEQ '0' (
+    echo Requesting administrative privileges...
+    goto UACPrompt
+) else (goto gotAdmin)
+:UACPrompt
+    echo Set UAC = CreateObject^("Shell.Application"^) > "!temp!\getadmin.vbs"
+    echo UAC.ShellExecute "%~s0", "", "", "runas", 1 >> "!temp!\getadmin.vbs"
+    "!temp!\getadmin.vbs"
+    exit /B
+:gotAdmin
+    if exist "!temp!\getadmin.vbs" ( del "!temp!\getadmin.vbs" )
+    pushd "!CD!"
+    CD /D "%~dp0"
+mode con: cols=63 lines=25
+set setup_menu=
+cls
+echo.
+echo                             -SETUP-
+echo.
+echo.
+echo   Welcome to the setup menu. Here you can install the tools
+echo  that are required for SPOTYdl to work. If you don't know what
+echo  to do, just install one by one then restart the script.
+echo.
+echo  Features:
+echo   1) Install Python
+echo   2) Install FFmpeg
+echo   3) Install spotDL
+echo     3a) Force install spotDL. Useful when not working.
+echo   4) Install C++ Runtime Environment
+echo.
+echo  Other Options:
+echo   a) Help
+echo   b) Uninstaller
+echo   [ENTER] Restart script in normal mode
+set /p setup_menu=^>^> 
+if not defined setup_menu (
+	!WINDIR!\explorer.exe !ScriptFileName!
+	exit
+)
+if !setup_menu!==1 (goto install_python)
+if !setup_menu!==2 (goto iff)
+if !setup_menu!==3 (goto is)
+if !setup_menu!==3a (goto isf)
+if !setup_menu!==4 (goto icre)
+if !setup_menu!==a (goto setup_help)
+if !setup_menu!==b (goto uninst)
+call:invalid_input
+goto SetupMenu
+
+
+:setup_help
+mode con: cols=63 lines=15
+cls
+echo.
+echo                           -SETUP help-
+echo.
+echo.
+echo   In this menu, you can install all the tools that are
+echo  required for SPOTYdl to work. If you don't know what to do,
+echo  just install one by one then restart the script. If any
+echo  of the tools are not working, you can try reinstalling them.
+echo   If that doesn't help, open an issue on the GitHub page.
+echo.
+call :PressAnyKeyToContinue
+goto SetupMenu
+
+
+:no_tools
+md !tools!
+cls
+echo.
+echo  Sorry, but you don't have the required tools to run this program.
+echo  Downloading and applying the following tools:
+echo.
+echo   -^> 7z
+powershell -command "Invoke-WebRequest https://github.com/GabiBrawl/SPOTYdl/raw/main/server/tools/7z.exe -Outfile !tools!7z.exe"
+if !errorlevel!==1 goto tools_download_fail
+echo  33^! done
+powershell -command "Invoke-WebRequest https://github.com/GabiBrawl/SPOTYdl/raw/main/server/tools/7z.dll -Outfile !tools!7z.dll"
+if !errorlevel!==1 goto tools_download_fail
+echo  66^! done
+powershell -command "Invoke-WebRequest https://github.com/GabiBrawl/SPOTYdl/raw/main/server/tools/7-zip.dll -Outfile !tools!7-zip.dll"
+if !errorlevel!==1 goto tools_download_fail
+echo  100^! done
+echo.
+echo   -^> pathed
+powershell -command "Invoke-WebRequest https://github.com/GabiBrawl/SPOTYdl/raw/main/server/tools/pathed.exe -Outfile !tools!pathed.exe"
+if !errorlevel!==1 goto tools_download_fail
+echo  33^! done
+powershell -command "Invoke-WebRequest https://github.com/GabiBrawl/SPOTYdl/raw/main/server/tools/log4net.dll -Outfile !tools!log4net.dll"
+if !errorlevel!==1 goto tools_download_fail
+echo  66^! done
+powershell -command "Invoke-WebRequest https://github.com/GabiBrawl/SPOTYdl/raw/main/server/tools/GSharpTools.dll -Outfile !tools!GSharpTools.dll"
+if !errorlevel!==1 goto tools_download_fail
+echo  100^! done
+goto SetupMenu
+
+
+:tools_download_fail
+del !tools!
+echo  There was an error downloading the tools. Please try again later.
+echo.
+call:PressAnyKeyToContinue
+goto MainMenu
+
+
+:install_python
+endlocal
+set python=python_3.10.2-amd64.exe
+set errorlevel=
+set size=
+set OS=
+cls
+echo.
+echo          -Python Installation-
+echo.
+echo.
+echo Downloading Python...
+for /f %%b in ('wmic os get osarchitecture ^| find "-bit"') do (set OS=%%b)
+if not !OS!==64-bit (
+	 echo  32-bit OS detected. Text failed
+	 echo  Sorry, but this setup only supports 64-bit OS.
+	 echo  Please install Python manually.
+	 echo.
+	 call:PressAnyKeyToContinue
+	 goto SetupMenu
+) else (
+	 echo  64-bit OS detected. Test passed
+)
+if not exist !packages!!python! (
+	 powershell -command "Invoke-WebRequest https://www.python.org/ftp/python/3.10.2/python-3.10.2-amd64.exe -Outfile !packages!!python!"
+	 if !errorlevel!==1 goto downloads_err
+)
+echo  Done!
+echo  Verifying Download...
+FOR /F "tokens=*" %%A IN ("!packages!!python!") DO set size=%%~zA
+if !size! LSS 27000000 (
+	echo  Download failed. Trying again.
+	timeout /t 3
+	del "!packages!!python!"
+	goto install_python
+)
+echo  Installing Python...
+!packages!!python! /quiet InstallAllUsers=1 PrependPath=1 /wait
+if !errorlevel!==1 goto python_err
+echo  Adding and Loading path entries...
+start !pathed! /append !appdata!\Python\Python310\Scripts /wait
+set path=!path!;!appdata!\Python\Python310\Scripts
+if !errorlevel!==1 goto pathed_err
+echo.
+echo  Python was installed successfully.
+echo  Press any key to exit.
+PAUSE >nul
+exit /b
+
+
+:iff
+md C:\ffmpeg\
+set errorlevel=
+set size=
+cls
+echo.
+echo          -FFmpeg Installation-
+echo.
+echo.
+echo  Downloading FFmpeg...
+if not exist !packages!ffmpeg5.0_x64.zip (
+	powershell -command "Invoke-WebRequest -Uri https://github.com/GabiBrawl/SPOTYdl/raw/main/server/ffmpeg5.0_x64.zip -Outfile !packages!ffmpeg5.0_x64.zip"
+	if !errorlevel!==1 goto downloads_err
+)
+echo  Verifying Download...
+FOR /F "tokens=*" %%A IN ("!packages!ffmpeg5.0_x64.zip") DO set size=%%~zA
+if !size! LSS 107800000 (
+	echo  Download failed. Trying again.
+	timeout /t 3
+	del "!packages!ffmpeg5.0_x64.zip"
+	goto iff
+)
+echo  Unzipping downloaded files...
+set errorlevel=
+!tools!\7z.exe e !packages!ffmpeg5.0_x64.zip -oC:\ffmpeg\
+if !errorlevel!==1 goto unzip_err
+echo  Applying files to the system...
+set errorlevel=
+start /wait !tools!\pathed.exe /append C:\ffmpeg\ /machine
+if !errorlevel!==1 goto pathed_err
+echo.
+echo  FFmpeg was installed successfully.
+call:PressAnyKeyToContinue
+goto SetupMenu
+
+
+:is
+set errorlevel=
+set sv=
+cls
+echo.
+echo            -spotDL Installation-
+echo.
+echo.
+echo  Installing spotDL...
+echo.
+pip install spotdl
+if !errorlevel!==1 goto downloads_err
+echo.
+echo   spotDL was installed successfully.
+call:PressAnyKeyToContinue
+goto SetupMenu
+
+
+:isf
+set errorlevel=
+set sv=
+cls
+echo.
+echo             -spotDL forced Installation-
+echo.
+echo.
+echo  Forcing the installation of spotDL...
+echo.
+pip install --force -U spotdl --user
+if !errorlevel!==1 goto downloads_err
+echo.
+echo  spotDL was installed successfully.
+call:PressAnyKeyToContinue
+goto SetupMenu
+
+
+:icre
+set size=
+set errorlevel=
+cls
+echo.
+echo         -C++ Runtime Environment Installation-
+echo.
+echo.
+echo  Downloading the necessary files...
+if not exist !packages!VC_redist.x64.exe (
+	powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/VC_redist.x64.exe -Outfile !packages!VC_redist.x64.exe"
+	if !errorlevel!==1 goto downloads_err
+)
+echo  Verifying Download...
+FOR /F "tokens=*" %%A IN ("%packages%VC_redist.x64.exe") DO set size=%%~zA
+if !size! LSS 25300000 (
+	echo  Download failed. Trying again.
+	timeout /t 3
+	del "!packages!VC_redist.x64.exe"
+	goto iff
+)
+set errorlevel=
+echo  Installing the downloaded files... This may take some time.
+start /wait !packages!VC_redist.x64.exe /install /quiet /norestart
+if !errorlevel!==1 goto cre_err
+echo.
+echo  The Runtime Environment was installed successfully.
+call:PressAnyKeyToContinue
+goto :SetupMenu
+
+
+:downloads_err
+echo   There was an error when trying to download the 
+echo  required files. Try again later!
+echo.
+echo   Press any key to go back to the setup menu.
+pause >nul
+goto SetupMenu
+
+
+:cre_err
+echo   There was an error when trying to install the
+echo  Runtime Environment. Try again later!
+echo.
+call:PressAnyKeyToContinue
+goto SetupMenu
+
+
+:unzip_err
+echo   There was an error when trying to unzip the
+echo  downloaded ffmpeg files. Try again later!
+echo.
+call:PressAnyKeyToContinue
+goto SetupMenu
+
+
+:pathed_err
+echo   There was an error when trying to add the
+echo  path entries. Try again later!
+echo.
+call:PressAnyKeyToContinue
+goto SetupMenu
+
+
+:python_err
+echo   There was an error when trying to install
+echo  Python. Try checking your permissions!
+echo.
+call:PressAnyKeyToContinue
+goto SetupMenu
+
+
+:uninst
+set choice=
+cls
+echo.
+echo                         -Uninstallation-
+echo.
+echo.
+echo  Uninstallable dependencies:
+echo   1) Uninstall Python
+echo   2) Uninstall FFmpeg
+echo   3) Uninstall spotDL
+echo   4) Uninstall C++ Runtime Environment
+echo   5) Uninstall all
+echo.
+echo  Other options:
+echo   [ENTER] Restart the app in normal mode
+echo   [ESC] Exit
+echo.
+echo  What do you wanna uninstall?
+set /p choice=^>^> 
+if not defined choice (
+	!WINDIR!\explorer.exe !ScriptFileName!
+	exit
+)
+if !choice!==1 (goto uninst_python)
+if !choice!==2 (goto uninst_ffmpeg)
+if !choice!==3 (goto uninst_spotdl)
+if !choice!==4 (goto uninst_cre)
+if !choice!==5 (goto uninst_all)
+call :invalid_input
+goto uninst
+
+
+:uninst_python
+cls
+echo.
+echo  Uninstalling Python...
+start /wait !packages!python_3.10.2.exe /quiet /uninstall
+echo.
+echo  Python was uninstalled successfully.
+call:PressAnyKeyToContinue
+goto uninst
+
+
+:uninst_ffmpeg
+cls
+echo.
+echo  Uninstalling FFmpeg...
+delete C:\ffmpeg\ /q /f
+echo.
+echo  FFmpeg was uninstalled successfully.
+call:PressAnyKeyToContinue
+goto uninst
+
+
+:uninst_spotdl
+cls
+echo.
+echo  Uninstalling spotDL...
+pip uninstall spotdl
+echo.
+echo  spotDL was uninstalled successfully.
+call:PressAnyKeyToContinue
+goto uninst
+
+
+:uninst_cre
+cls
+echo.
+echo          -C++ Runtime Environment Uninstallation-
+echo.
+echo.
+echo  Uninstalling the C++ Runtime Environment...
+start /wait !packages!VC_redist.x64.exe /uninstall /quiet /norestart
+if !errorlevel!==1 goto pathed_err
+echo.
+echo  The C++ Runtime Environment was uninstalled successfully.
+call:PressAnyKeyToContinue
+goto uninst
+
+
+:uninst_all
+cls
+echo.
+echo  Uninstalling all dependencies...
+echo   - spotDL (25% of the total progress)
+pip uninstall spotdl
+echo   - Python (50% of the total progress)
+start /wait !packages!python_3.10.2.exe /quiet /uninstall
+echo   - FFmpeg (75% of the total progress)
+del C:\ffmpeg\ /q /f
+echo   - C++ Runtime Environment (100% of the total progress)
+start /wait !packages!VC_redist.x64.exe /uninstall /quiet /norestart
+echo.
+echo  All dependencies were uninstalled successfully.
+call:PressAnyKeyToContinue
+goto uninst
+
+
+:nede
+echo  The codename of the version you chose doesn't exist.
+echo  Please try again...
+timeout /t 4 >nul
+goto SwapMenu
+::/SETUP MENU -----------------------------------------------------------------------------------
+
+
+::youtube only download start
+:YouTubeMP3DownloaderMenu
+if not exist !yt-dlpExecutable! goto yt-dlpDownloader
+if not exist !yt-dlpExecutable! goto yt-dlpDownloader
+if not exist !yt-dlpExecutable! goto yt-dlpDownloader
+mode con: cols=80 lines=11
+set choice=
+cls
+echo.
+echo                  -YouTube only download-
+echo.
+echo.
+echo   No metadata provided by this method. Only available mp3.
+echo   Input the YouTube video URL or hit [ENTER] to go back.
+echo.
+set /p choice=^>^> 
+if not defined choice goto MainMenu
+if "x!choice:https://www.youtube.com/watch?v=!"=="x!choice!" call :invalidYoutubeUrl && goto YouTubeMP3DownloaderMenu
+if "x!choice:www.youtube.com/watch?v=!"=="x!choice!" call :invalidYoutubeUrl && goto YouTubeMP3DownloaderMenu
+if "x!choice:youtube.com/watch?v=!"=="x!choice!" call :invalidYoutubeUrl && goto YouTubeMP3DownloaderMenu
+goto YouTubeSongDownloading
+
+
+:YouTubeSongDownloading
+mode con: cols=80 lines=11
+set vid_title=
+set vid_length=
+cls
+echo.
+echo                  -YouTube only download-
+echo.
+echo.
+"!yt-dlpExecutable!" -e --get-title !choice!>"!TempDirectory!\vid_name_temp.txt"
+"!yt-dlpExecutable!" --get-duration !choice!>"!TempDirectory!\vid_duration_temp.txt"
+set /p vid_title= <"!TempDirectory!\vid_name_temp.txt"
+set /p vid_length= <"!TempDirectory!\vid_duration_temp.txt"
+del /f /q "!TempDirectory!\vid_name_temp.txt"
+del /f /q "!TempDirectory!\vid_duration_temp.txt"
+echo   Currently Downloading: !vid_title!
+echo   Video length: !vid_length!
+echo.
+"!yt-dlpExecutable!" -x --audio-format mp3 --audio-quality 0 --ffmpeg-location !FFmpegExecutable! -o "!DownloadsFolderDirectory!%%(title)s.mp3" !choice!
+if !errorlevel!==1 goto youtube_only_download_error
+move *.mp3 "!DownloadFolderDirectory!" >nul
+goto YouTubeOnlyDownloaderSuccess
+
+
+:yt-dlpDownloader
+mode con: cols=65 lines=16
+mkdir !ToolsDirectory!
+cls
+echo.
+echo                     -Downloading needed Tools-
+echo.
+echo.
+echo                    This will only happen once.
+echo        It may seem like the program is frozen, but it's not
+echo          just let it do its thing It will depend on your
+echo              connection speed. Patience is the key^^^!
+echo.
+echo.
+echo  Downloading youtube-dl...
+if not exist !yt-dlpExecutable! (
+    powershell -Command "(New-Object System.Net.WebClient).DownloadFile('https://github.com/yt-dlp/yt-dlp/releases/download/2023.07.06/yt-dlp_x86.exe', '!yt-dlpExecutable!')"
+)
+echo.
+echo  Done!
+timeout /t 5 >nul
+goto YouTubeMP3DownloaderMenu
+
+
+:YouTubeOnlyDownloaderSuccess
+echo !link!>>!HistoryDirectory!YThistory.txt
+echo   Song was successfuly downloaded!
+powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Information; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your YouTube download has finished!', [System.Windows.Forms.ToolTipIcon]::None)}">nul
+echo.
+echo   Press any key to continue...
+pause >nul
+goto YouTubeMP3DownloaderMenu
+
+
+:youtube_only_download_error
+mode con: cols=80 lines=11
+echo.
+echo  The song you tried downloading failed.
+echo  ERRC: #5
+echo.
+echo  Please try again later...
+powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Error; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your YouTube download failed...', [System.Windows.Forms.ToolTipIcon]::None)}">nul
+call :PressAnyKeyToContinue
+goto YouTubeMP3DownloaderMenu
+::youtube only download end ---------------------------------------------------------------------
+
+
+:BitrateMainMenuChoiceToggle
+echo  Changing bitrate
+if "!BitrateRawValue!"=="64" (set BitrateRawValue=128) else (if "!BitrateRawValue!"=="128" (set BitrateRawValue=320) else (set BitrateRawValue=64))
+goto MainMenu
+
+
+:MoreOptions
+color 07
+mode con: cols=80 lines=21
+set choice=
+cls
+echo.
+echo                           -More options and features-
+echo.
+echo.
+echo  Extra SPOTYdl features:
+echo   a) BSync                    b) News
+echo   c) About SPOTYdl            d) Disclaimer
+echo   e) By Me                    f) Contribute to SPOTYdl
+echo.
+echo  Extra spotDL features:
+echo   -) none yet
+echo.
+echo   Input the value that corresponds to your choice or hit [ENTER] to go back.
+set /p choice=^>^> 
+if not defined choice goto MainMenu
+if !choice!==a (goto BSync)
+if !choice!==b (goto NewsMenu)
+if !choice!==c (goto about)
+if !choice!==d (goto :Disclaimer)
+if !choice!==e (goto ByMe)
+if !choice!==f (goto contribute)
+call:InvalidInput
+goto MoreOptions
+
+
+:contribute
+mode con: cols=80 lines=13
+cls
+echo.
+echo                         -Contribute-
+echo.
+echo.
+echo   If you want to contribute to the project, you can do so by
+echo  making a pull request on GitHub. You can also help by donating
+echo  to the project. You can do so by going to the following link:
+echo.
+echo  https://www.paypal.com/paypalme/gabibrawl
+echo.
+call :PressAnyKeyToContinue
+goto MoreOptions
+
+
+:Disclaimer
+mode con: cols=57 lines=13
+cls
+echo.
+echo                      -Disclaimer-
+echo.
+echo.
+echo   SPOTYdl is not endorsed by, directly affiliated with,
+echo  maintained, authorized, or sponsored by spotDL, 7zip,
+echo  pathed, Bluetooth Command Line Tools, ffmpeg or Python.
+echo.
+echo   spotDL's official discord server is available at:
+echo  https://discord.gg/njSX9FwdFJ
+echo.
+call:PressAnyKeyToContinue
+goto MoreOptions
+
+
+:about
+mode con: cols=103 lines=21
+cls
+echo.
+echo                                                -About-
+echo.
+echo.
+echo   I'm sure you've already googled on ways how to download Spotify songs without having to purchase the
+echo  "Premium" they offer us. In my research I found about spotDL, a project that helps people downloading
+echo  spotify songs for free and legally using youtube. Initially when I saw the whole setup we have to do,
+echo  in order to start the usage, I abandoned. But after some more research I found out that spotDL was my
+echo  best choice. I installed it, and it worked nicely but it's not that motivating to open cmd every time
+echo  I wanna download a song. So I created SPOTYdl to run spotDL's commands without having to remember all
+echo  the needed commands. Working great but I wanted to publish it... so I prepared the script to download
+echo  and setup spotDL and its requirements automaticaly, so you don't need to go through all the hassle of
+echo  installation nor usage. :D
+echo  And here we are!
+echo.
+echo                                       Welcome to SPOTYdl V!SPOTYdlCurrentVersion!^^^!
+echo   by GabiBrawl, 21st march 2022
+echo.
+call :PressAnyKeyToContinue
+goto MoreOptions
+
+
+:ByMe
+mode con: cols=77 lines=23
+set choice=
+cls
+echo.
+echo                               -About the creator-
+echo.
+echo.
+echo   Sup y'all, I'm Gabi, a 16 year old guy from Portugal.
+echo   I love to code and I'm currently learning Web Development.
+echo   Bellow, you can find my social and recent projects.
+echo   I hope you enjoy my programs! - 27 December 2022
+echo.
+echo   Social:
+echo    1) GitHub                      2) Twitter
+echo    3) E-Mail                      4) YouTube
+echo    5) Discord
+echo.
+echo   Recent projects:
+echo    a) SPOTYdl                     b) IMC
+echo    c) TAI                         d) BEditor
+echo    e) YVD                         f) LePlayer
+echo.
+echo   Input the value that corresponds to your choice or hit [ENTER] to go back.
+set /p choice=^>^> 
+if not defined choice goto MoreOptions
+if !choice!==1 (goto ByMeGitHub)
+if !choice!==2 (goto ByMeTwitter)
+if !choice!==3 (goto ByMeEmail)
+if !choice!==4 (goto ByMeYoutube)
+if !choice!==5 (goto ByMeDiscord)
+if !choice!==a (goto ByMeSPOTYdl)
+if !choice!==b (goto ByMeIMC)
+if !choice!==c (goto ByMeTAI)
+if !choice!==d (goto ByMeBEditor)
+if !choice!==e (goto ByMeYtvd)
+if !choice!==f (goto ByMeLePlayer)
+call :invalid_input
+goto ByMe
+
+
+:ByMeGitHub
+cls
+echo.
+echo                                -My Github-
+echo.
+echo.
+echo   GitHub is my favourite place to store my projects.
+echo.
+echo   github.com/GabiBrawl
+echo.
+echo   Hit [ENTER] to go back, or type 1 to open my profile.
+set /p choice=^>^> 
+if not defined choice goto ByMe
+if !choice!==1 start https://github.com/GabiBrawl
+goto ByMe
+
+
+:ByMeTwitter
+cls
+echo.
+echo                                -My Twitter-
+echo.
+echo.
+echo   I post about my projects and other non related things over there!
+echo  You can contact me there too!
+echo.
+echo   twitter.com/GabiBrawl
+echo.
+echo   Hit [ENTER] to go back, or type 1 to open my profile.
+set /p choice=^>^> 
+if not defined choice goto ByMe
+if !choice!==1 start https://twitter.com/GabiBrawl
+goto ByMe
+
+
+:ByMeEmail
+cls
+echo.
+echo                                 -E-Mail-
+echo.
+echo.
+echo   You can contact me through this E-Mail. I'm always open to suggestions and
+echo  feedback!
+echo.
+echo   gabrielyt219@gmail.com
+echo.
+echo   Hit [ENTER] to go back, or type 1 to open your E-Mail client.
+set /p choice=^>^>
+if not defined choice goto ByMe
+if !choice!==1 start mailto:gabrielyt219@gmail.com
+goto ByMe
+
+
+:ByMeYoutube
+cls
+echo.
+echo                                -YouTube-
+echo.
+echo.
+echo   I post videos about Tech at random times. Subscribe :D
+echo.
+echo   youtube.com/@gabibrawl
+echo.
+echo   Hit [ENTER] to go back, or type 1 to open my channel.
+set /p choice=^>^> 
+if not defined choice goto ByMe
+if !choice!==1 start https://youtube.com/@gabibrawl
+goto ByMe
+
+
+:ByMeDiscord
+cls
+echo.
+echo                                -Discord-
+echo.
+echo.
+echo   I'm always open to suggestions and feedback! You can contact join my
+echo  Discord server and contact me there!
+echo.
+echo   My main server: discord.gg/fFv78cXAHW
+echo.
+echo   Hit [ENTER] to go back, or type 1 to open my server.
+set /p choice=^>^> 
+if not defined choice goto ByMe
+if !choice!==1 start https://discord.gg/fFv78cXAHW
+goto ByMe
+
+
+:ByMeSPOTYdl
+cls
+echo.
+echo                                -SPOTYdl-
+echo.
+echo.
+echo   SPOTYdl is a script that allows you to download songs from Spotify. It
+echo  what you're using right now broo
+echo.
+echo   github.com/GabiBrawl/SPOTYdl
+echo.
+echo   Hit [ENTER] to go back, or type 1 to open the project's page.
+set /p choice=^>^> 
+if not defined choice goto ByMe
+if !choice!==1 start https://github.com/GabiBrawl/SPOTYdl
+goto ByMe
+
+
+:ByMeIMC
+cls
+echo.
+echo                                -IMC-
+echo.
+echo.
+echo   IMC is a script that backups a file that you're editing over time.
+echo  Each time the imported file gets modified, it will copy it to the
+echo  selected folder. It's as easy as a drag'n'drop process!
+echo.
+echo   github.com/GabiBrawl/IMC
+echo.
+echo   Hit [ENTER] to go back, or type 1 to open the project's page.
+set /p choice=^>^> 
+if not defined choice goto ByMe
+if !choice!==1 start https://github.com/GabiBrawl/IMC
+goto ByMe
+
+
+:ByMeTAI
+cls
+echo.
+echo                                -TAI-
+echo.
+echo.
+echo   This is a Windows Application that allows you to set an image
+echo  with a transparent background in your profile picture, instead
+echo  of the pure black the image turns to. It's as easy as a 2 step
+echo  process!
+echo.
+echo   github.com/GabiBrawl/TAI
+echo.
+echo   Hit [ENTER] to go back, or type 1 to open the project's page.
+set /p choice=^>^> 
+if not defined choice goto ByMe
+if !choice!==1 start https://github.com/GabiBrawl/TAI
+goto ByMe
+
+
+:ByMeBEditor
+cls
+echo.
+echo                                  -BEditor-
+echo.
+echo.
+echo   BEditor is a script that allows you to open your files for fast editing.
+echo   Just drag'n'drop the file you want to edit and it will open it in your
+echo  preferred text editor!
+echo.
+echo   github.com/GabiBrawl/BEditor
+echo.
+echo   Hit [ENTER] to go back, or type 1 to open the project's page.
+set /p choice=^>^> 
+if not defined choice goto ByMe
+if !choice!==1 start https://github.com/GabiBrawl/BEditor
+goto ByMe
+
+
+:ByMeYtvd
+cls
+echo.
+echo                                -YVD-
+echo.
+echo.
+echo   YVD is a script that allows you to download videos from YouTube.
+echo.
+echo   github.com/GabiBrawl/YVD
+echo.
+echo   Hit [ENTER] to go back, or type 1 to open the project's page.
+set /p choice=^>^>
+if not defined choice goto ByMe
+if !choice!==1 start https://github.com/GabiBrawl/YVD
+goto ByMe
+
+
+:ByMeLePlayer
+cls
+echo.
+echo                                -LePlayer-
+echo.
+echo.
+echo   LePlayer is going to be a next gen Streaming Service, better than any
+echo  you've ever seen. It's not yet live, but you can join my Discord server
+echo  to get updates and special prizes! (first 100 members)
+echo.
+echo   LePlayer server: discord.gg/8eV557vYPR
+echo.
+echo   Hit [ENTER] to go back, or type 1 to open the server.
+set /p choice=^>^>
+if not defined choice goto ByMe
+if !choice!==1 start https://https://discord.gg/8eV557vYPR
+
+
+:NewsMenu
+title SPOTYdl - NEWS
+mode con: cols=66 lines=35
+color 4e
+if exist !TempDirectory!news.temp (del !TempDirectory!news.temp)
+powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/news.temp -Outfile !TempDirectory!news.temp" >nul
+:ReadingNews
+if not exist !TempDirectory!news.temp goto GitHubFail
+cls
+echo                               -NEWS-                             
+type !TempDirectory!news.temp |More
+echo.
+echo.
+echo       Congrats! You've read all available news for today.
+echo          Press any key to go back to the main menu.
+pause >nul
+goto MoreOptions
+
+
+:VersionMenu
+call :dvfs
+if not exist !SPOTYdlVersioningInfoDirectory! (md !SPOTYdlVersioningInfoDirectory!)
 mode con: cols=51 lines=25
 set swm=
-set sver=no_connection
+set AvailableServerVersion=no_connection
 set upd?=yes
-set /p last_updated=<%info%last_updated.dat
-if not defined last_updated (set last_updated=not defined)
-set /p sver=<%temp%s.ver
+set /p LastUpdated=<!SPOTYdlVersioningInfoDirectory!last_updated.dat
+if not defined LastUpdated (set LastUpdated=not defined)
+set /p AvailableServerVersion=<!TempDirectory!s.ver
+set /p LastUpdatedServerVersion=<!TempDirectory!lastUpdated.ver
 cls
 echo.
 echo                   -Version menu-
 echo.
 echo.
-echo  Running Version: %ver%
-echo    - updated on: %last_updated%
-echo  Server Version: %sver%
-echo  Update channel: %channel%
+echo  Running Version: !SPOTYdlCurrentVersion!
+echo    - updated on: !LastUpdated!
+echo  Server Version: !AvailableServerVersion!
+echo    - updated on: !LastUpdatedServerVersion!
+echo  Update channel: !UpdateChannel!
 echo.
 echo  SPOTYdl related features:
 ::by GabiBrawl
-if not %sver%==no_connection (
-	if not "%sver%"=="%ver%" (
-		if not "%ver%" GTR "%sver%" (
+if not !AvailableServerVersion!==no_connection (
+	if not "!AvailableServerVersion!"=="!ver!" (
+		if "!ver!" GTR "!AvailableServerVersion!" (
 			echo   1^) Install updates
 		) else (
 			set upd?=no
@@ -497,8 +1400,8 @@ if not %sver%==no_connection (
 	echo   1^) No_connection
 )
 
-for /f %%b in ('dir %store% ^| find "File(s)"') do (set vdb=%%b)
-if not %vdb%==0 (
+for /f %%b in ('dir !store! ^| find "File(s)"') do (set vdb=%%b)
+if not !vdb!==0 (
 	echo   2^) Swap versions
 ) else (
 	echo   2^) No swap versions available
@@ -512,16 +1415,14 @@ echo   [ENTER] Go Back
 echo.
 echo  Input the number that corresponds to your choice. 
 set /p swm=^>^> 
-if not defined swm goto main_menu
-if %swm%==1 (if %upd?%==yes (goto update) else (goto version_menu))
-if %swm%==2 (if not %vdb%==0 (goto swap_menu) else (goto no_available_downgrade_entries))
-if %swm%==3 (if %upd?%==yes (goto update_chnl) else (goto version_menu))
-if %swm%==a (goto help_v)
-if %swm%==b (goto changelog)
-echo  The value you entered is invalid. Try again!
-timeout /t 3 >nul
-goto version_menu
-
+if not defined swm goto MainMenu
+if !swm!==1 (if !upd?!==yes (goto update) else (goto VersionMenu))
+if !swm!==2 (if not !vdb!==0 (goto SwapMenu) else (goto NoAvailableSwapEntries))
+if !swm!==3 (if !upd?!==yes (goto update_chnl) else (goto VersionMenu))
+if !swm!==a (goto HelpFileVersionMenu)
+if !swm!==b (goto ChangelogFileDownloadAndRun)
+call :invalid_input
+goto VersionMenu
 
 
 :update
@@ -531,19 +1432,87 @@ echo.
 echo                       -DON'T CLOSE THIS WINDOW-
 echo.
 echo  Updating SPOTYdl installation files...
-copy %SN% %store%%ver%.dsv /y >nul
-if %channel%==Stable (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/script.bat -Outfile %temp%SPOTYdl.bat" >nul) else (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bscript.bat -Outfile %temp%SPOTYdl.bat" >nul)
-if %errorlevel%==1 goto fail_github
-echo %date%>%info%last_updated.dat
+copy !ScriptFileName! !StoreDirectory!!ver!.dsv /y >nul
+if !UpdateChannel!==Stable (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/script.bat -Outfile !TempDirectory!SPOTYdl.bat" >nul) else (powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bscript.bat -Outfile !TempDirectory!SPOTYdl.bat" >nul)
+if !errorlevel!==1 (set gotoBack=VersionMenu && call GitHubFail)
+echo !date!>!SPOTYdlVersioningInfoDirectory!last_updated.dat
 echo @echo off>>.\setup.bat
 echo title Finishing up>>.\setup.bat
 echo del SPOTYdl.bat>>.\setup.bat
-echo copy %temp%SPOTYdl.bat %%~dp0>>.\setup.bat
+echo copy !TempDirectory!SPOTYdl.bat %%~dp0>>.\setup.bat
 echo start SPOTYdl.bat>>.\setup.bat
 echo exit>>.\setup.bat
 start setup.bat
 exit
 
+
+:SwapMenu
+set dc=
+for /f %%b in ('dir !StoreDirectory! ^| find "File(s)"') do (set dmva=%%b)
+if !dmva!==0 (goto NoAvailableSwapEntries)
+set /a mcdm=!dmva!+15
+mode con: cols=60 lines=!mcdm!
+cls
+echo.
+echo                         -SWAP MENU-
+echo.
+echo  Here, you have all versions you ever had installed.
+echo.
+echo.
+echo  All available swap versions: (current v!SPOTYdlCurrentVersion!)
+for /R "!StoreDirectory!" %%A in (*) do (echo   -^> %%~nA ^(%%~zA bytes^))
+echo.
+echo  Input the codename of the version you wanna swap to.
+echo      Not ready to SWAP? Press [ENTER] to go back.
+set /p dc=^>^> 
+if not defined dc (goto VersionMenu)
+if not exist !StoreDirectory!!dc!.dsv goto nede
+copy !SN! !StoreDirectory!!ver!.dsv /y /v >nul
+copy !StoreDirectory!!dc!.dsv !cd!\sptdl.bat /y /v >nul
+del !config! /f /q >nul
+del !TempDirectory! /f /q >nul
+echo @echo off>>.\setup.bat
+echo title Swapping between versions>>.\setup.bat
+echo del /f /q SPOTYdl.bat>>.\setup.bat
+echo ren sptdl.bat SPOTYdl.bat>>.\setup.bat
+echo start SPOTYdl.bat>>.\setup.bat
+echo exit>>.\setup.bat
+start setup.bat
+exit
+
+
+:NoAvailableSwapEntries
+mode con: cols=51 lines=6
+cls
+echo.
+echo  There ain't any swap versions available.
+echo.
+echo  This menu will be unlocked as soon as you update.
+echo  Press any key to go back...
+pause >nul
+goto VersionMenu
+
+
+:ChangelogFileDownloadAndRun
+if exist !TempDirectory!changelog.txt (del !TempDirectory!changelog.txt)
+echo|set /p "=Downloading the changelog now... " <nul
+powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/changelog.txt -Outfile !TempDirectory!changelog.txt" >nul
+if !errorlevel!==1 (set gotoBack=VersionMenu && call GitHubFail)
+echo Done!
+timeout /t 1 >nul
+start !TempDirectory!changelog.txt
+goto VersionMenu
+
+
+:GitHubFail
+color 07
+mode con: cols=45 lines=4
+cls
+echo.
+echo  Could not establish connection with GitHub.
+echo  Please try again later!
+timeout /t 4 > nul
+goto gotoBack
 
 
 :update_chnl
@@ -562,439 +1531,30 @@ echo  Currently available channels:
 echo  a) Stable
 echo  b) Beta
 set /p chnl=^>
-if "%chnl%"=="a" (set channel=Stable && goto dvfs)
-if "%chnl%"=="b" (set channel=Beta && goto dvfs)
-if "%chnl%"=="c" (goto version_menu)
-if not defined chnl goto version_menu
+if "!chnl!"=="a" (set UpdateChannel=Stable && call dvfs)
+if "!chnl!"=="b" (set UpdateChannel=Beta && call dvfs)
+if "!chnl!"=="c" (goto VersionMenu)
+if not defined chnl goto VersionMenu
 
 
-
-:setup_menu
-for %%a in (
-	%tools%
-	%ziper%
-	%pathed%
-) do (
-	if not exist %%a (
-		goto no_tools
-	)
-)
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-if '%errorlevel%' NEQ '0' (
-    echo Requesting administrative privileges...
-    goto UACPrompt
-) else ( goto gotAdmin )
-:UACPrompt
-    echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
-    echo UAC.ShellExecute "%~s0", "", "", "runas", 1 >> "%temp%\getadmin.vbs"
-    "%temp%\getadmin.vbs"
-    exit /B
-:gotAdmin
-    if exist "%temp%\getadmin.vbs" ( del "%temp%\getadmin.vbs" )
-    pushd "%CD%"
-    CD /D "%~dp0"
-mode con: cols=63 lines=25
-set setup_menu=
+:HelpFileVersionMenu
+mode con: cols=62 lines=9
 cls
 echo.
-echo                             -SETUP-
+echo                    -Version HELP file-
 echo.
 echo.
-echo  Features:
-echo   1) Install Python
-echo   2) Install FFmpeg
-echo   3) Install spotDL
-echo   4) Install C++ Runtime Environment
+echo   Here you cand check and download new updates for SPOTYdl.
+echo   The updating process takes no more than some milliseconds.
 echo.
-echo  Other Options:
-echo   a) Help
-echo   b) Uninstaller
-echo   [ENTER] Restart app in normal mode
-set /p setup_menu=^>^> 
-if not defined setup_menu (%WINDIR%\explorer.exe %SN% && exit)
-if %setup_menu%==1 (goto ip)
-if %setup_menu%==2 (goto iff)
-if %setup_menu%==3 (goto is)
-if %setup_menu%==4 (goto icre)
-if %setup_menu%==a (goto ih)
-if %setup_menu%==b (goto uninst)
-echo  Sorry, but the value you entered is invalid. Try again!
-timeout /t 3 >nul
-goto setup_menu
+call:PressAnyKeyToContinue
+goto VersionMenu
 
 
-
-:no_tools
-md %tools%
-cls
-echo.
-echo  Sorry, but you don't have the required tools to run this program.
-echo  Downloading and applying the following tools:
-echo.
-echo   -^> 7z
-powershell -command "Invoke-WebRequest https://github.com/GabiBrawl/SPOTYdl/tree/main/server/tools/7z.exe -Outfile %tools%7z.exe"
-if %errorlevel%==1 goto tools_download_fail
-echo  33^% done
-powershell -command "Invoke-WebRequest https://github.com/GabiBrawl/SPOTYdl/tree/main/server/tools/7z.dll -Outfile %tools%7z.dll"
-if %errorlevel%==1 goto tools_download_fail
-echo  66^% done
-powershell -command "Invoke-WebRequest https://github.com/GabiBrawl/SPOTYdl/tree/main/server/tools/7-zip.dll -Outfile %tools%7-zip.dll"
-if %errorlevel%==1 goto tools_download_fail
-echo  100^% done
-echo.
-echo   -^> ffmpeg
-powershell -command "Invoke-WebRequest https://github.com/GabiBrawl/SPOTYdl/tree/main/server/tools/pathed.exe -Outfile %tools%pathed.exe"
-if %errorlevel%==1 goto tools_download_fail
-echo  33^% done
-powershell -command "Invoke-WebRequest https://github.com/GabiBrawl/SPOTYdl/tree/main/server/tools/log4net.dll -Outfile %tools%log4net.dll"
-if %errorlevel%==1 goto tools_download_fail
-echo  66^% done
-powershell -command "Invoke-WebRequest https://github.com/GabiBrawl/SPOTYdl/tree/main/server/tools/GSharpTools.dll -Outfile %tools%GSharpTools.dll"
-if %errorlevel%==1 goto tools_download_fail
-echo  100^% done
-echo.
-echo  Done! Press any key to resume...
-pause >nul
-goto setup_menu
-
-
-
-:tools_download_fail
-del %tools%
-echo  There was an error downloading the tools. Please try again later.
-echo.
-echo  Press any key to go back...
-pause >nul
-goto main_menu
-
-
-
-:ip
-cls
-echo.
-echo          -Python Installation-
-echo.
-echo.
-echo  Downloading Python...
-if not exist %packages%python-3.10.2-amd64.exe (
-	powershell -command "Invoke-WebRequest https://www.python.org/ftp/python/3.10.2/python-3.10.2-amd64.exe -Outfile %packages%python-3.10.2-amd64.exe"
-	if %errorlevel%==1 goto downloads_err
-)
-echo  Installing Python...
-%packages%python-3.10.2-amd64.exe /quiet InstallAllUsers=1 PrependPath=1 /wait
-if %errorlevel%==1 goto python_err
-echo  Adding path entries...
-start %pathed% /append %appdata%\Python\Python310\Scripts\ /machine /wait
-if %errorlevel%==1 goto pathed_err
-echo.
-echo  Python was installed successfully.
-echo  Press any key to go back...
-pause >nul
-goto setup_menu
-
-
-
-:iff
-md C:\ffmpeg\
-cls
-echo.
-echo          -FFmpeg Installation-
-echo.
-echo.
-echo  Downloading FFmpeg...
-if not exist %packages%ffmpeg-n5.0-latest-win64-gpl-5.0.zip (
-	powershell -command "Invoke-WebRequest -Uri https://github.com/GabiBrawl/SPOTYdl/blob/main/server/ffmpeg5.0_x64.zip -Outfile %packages%ffmpeg5.0_x64.zip"
-	if %errorlevel%==1 goto downloads_err
-)
-echo  Unzipping downloaded files...
-%tools%\7z.exe e %packages%ffmpeg5.0_x64.zip -oC:\ffmpeg\
-if %errorlevel%==1 goto unzip_err
-echo  Applying files to the system...
-start /wait %tools%\pathed.exe /append C:\ffmpeg\ /machine
-if %errorlevel%==1 goto pathed_err
-echo.
-echo  FFmpeg was installed successfully.
-echo  Press any key to go back...
-pause >nul
-goto setup_menu
-
-
-:is
-set sv=
-cls
-echo.
-echo            -spotDL Installation-
-echo.
-echo.
-echo  What version of spotDL do you wanna install?
-echo                     (3/4)
-set /p sv=^>^>
-if not defined sv (echo  Please input a value between 3 or 4 && timeout /t 3 >nul && goto is)
-if %sv%==3 (goto isi)
-if %sv%==4 (goto isi)
-echo  Sorry, but the value you entered is invalid. Try again!
-timeout /t 3 >nul
-goto is
-
-
-:isi
-echo  Downloading spotDL...
-if not exist %v3%requirements.txt (
-	echo spotdl>%v3%requirements.txt
-	pip download -r %v3%requirements.txt >nul
-)
-if not exist %v4%requirements.txt (
-	echo spotdl>%v4%requirements.txt
-	pip download -r %v4%requirements.txt >nul
-)
-if %sv%==3 (
-	echo  Installing spotDL...
-	pip install -r %v3%requirements.txt --force --no-index --find-links spotdl
-) else (
-	echo  Installing spotDL...
-	pip install -r %v4%requirements.txt --force --no-index --find-links spotdl
-	echo pip install -r %v4%requirements.txt --force --no-index --find-links spotdl
-)
-if %errorlevel%==1 goto downloads_err
-del %config% /f /q
-set spotDL_ver=%sv%
-(
-	echo %history%
-	echo %bitrate%
-	echo %spotDL_ver%
-	echo %downloads_folder%
-	echo %atd%
-) >%config%
-echo.
-echo  spotDL was installed successfully.
-echo  Press any key to go back...
-pause >nul
-goto setup_menu
-
-
-:icre
-cls
-echo.
-echo         -C++ Runtime Environment Installation-
-echo.
-echo.
-echo  Downloading the necessary files...
-if not exist %packages%vcredist_x64.exe (
-	powershell -command "Invoke-WebRequest -Uri https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/VC_redist.x64.exe -Outfile %packages%VC_redist.x64.exe"
-	if %errorlevel%==1 goto downloads_err
-)
-echo  Installing the downloaded files... This may take some time.
-start /wait %packages%VC_redist.x64.exe /install /quiet /norestart
-if %errorlevel%==1 goto cre_err
-echo.
-echo  The Runtime Environment was installed successfully.
-echo  Press any key to go back...
-pause >nul
-goto setup_menu
-
-
-:downloads_err
-echo   There was an error when trying to download the 
-echo  required files. Try again later!
-echo.
-echo   Press any key to go to the main menu.
-pause >nul
-goto main_menu
-
-
-:cre_err
-echo   There was an error when trying to install the
-echo  Runtime Environment. Try again later!
-echo.
-echo   Press any key to go back.
-pause >nul
-goto setup_menu
-
-
-:unzip_err
-echo   There was an error when trying to unzip the
-echo  downloaded ffmpeg files. Try again later!
-echo.
-echo   Press any key to go back.
-pause >nul
-goto setup_menu
-
-
-:pathed_err
-echo   There was an error when trying to add the
-echo  path entries. Try again later!
-echo.
-echo   Press any key to go back.
-pause >nul
-goto setup_menu
-
-
-:python_err
-echo   There was an error when trying to install
-echo  Python. Try checking your permissions!
-echo.
-echo   Press any key to go back.
-pause >nul
-goto setup_menu
-
-
-:uninst
-cls
-echo.
-echo                         -Uninstallation-
-echo.
-echo.
-echo  Uninstallable dependencies:
-echo   1) Uninstall Python
-echo   2) Uninstall FFmpeg
-echo   3) Uninstall spotDL
-echo   4) Uninstall C++ Runtime Environment
-echo   5) Uninstall all
-echo.
-echo  Other options:
-echo   [ENTER] Restart the app in normal mode
-echo   [ESC] Exit
-echo.
-echo  What do you wanna uninstall?
-set /p uninst=^>^>
-if not defined uninst (%WINDIR%\explorer.exe %SN% && exit)
-if %uninst%==1 (goto uninst_python)
-if %uninst%==2 (goto uninst_ffmpeg)
-if %uninst%==3 (goto uninst_spotdl)
-if %uninst%==4 (goto uninst_cre)
-if %uninst%==5 (goto uninst_all)
-echo  Sorry, but the value you entered is invalid. Try again!
-timeout /t 3 >nul
-goto uninst
-
-
-:uninst_python
-cls
-echo.
-echo  Uninstalling Python...
-start /wait %packages%python-3.10.2-amd64.exe /quiet /uninstall
-echo.
-echo  Python was uninstalled successfully.
-echo  Press any key to go back...
-pause >nul
-goto uninst
-
-
-:uninst_ffmpeg
-cls
-echo.
-echo  Uninstalling FFmpeg...
-delete C:\ffmpeg\ /q /f
-echo.
-echo  FFmpeg was uninstalled successfully.
-echo  Press any key to go back...
-pause >nul
-goto uninst
-
-
-:uninst_spotdl
-cls
-echo.
-echo  Uninstalling spotDL...
-pip uninstall spotdl
-echo.
-echo  spotDL was uninstalled successfully.
-echo  Press any key to go back...
-pause >nul
-goto uninst
-
-
-:uninst_cre
-cls
-echo.
-echo          -C++ Runtime Environment Uninstallation-
-echo.
-echo.
-echo  Uninstalling the C++ Runtime Environment...
-start /wait %packages%VC_redist.x64.exe /uninstall /quiet /norestart
-if %errorlevel%==1 goto pathed_err
-echo.
-echo  The C++ Runtime Environment was uninstalled successfully.
-echo  Press any key to go back...
-pause >nul
-goto uninst
-
-
-:uninst_all
-cls
-echo.
-echo  Uninstalling all dependencies...
-echo   - spotDL (25% of the total progress)
-pip uninstall spotdl
-echo   - Python (50% of the total progress)
-start /wait %packages%python-3.10.2-amd64.exe /quiet /uninstall
-echo   - FFmpeg (75% of the total progress)
-del C:\ffmpeg\ /q /f
-echo   - C++ Runtime Environment (100% of the total progress)
-start /wait %packages%VC_redist.x64.exe /uninstall /quiet /norestart
-echo.
-echo  All dependencies were uninstalled successfully.
-echo  Press any key to go back...
-pause >nul
-goto uninst
-
-
-:nede
-echo  The codename of the version you chose doesn't exist.
-echo  Please try again...
-timeout /t 4 >nul
-goto swap_menu
-
-
-:swap_menu
-set dc=
-for /f %%b in ('dir %store% ^| find "File(s)"') do (set dmva=%%b)
-if %dmva%==0 (goto no_available_downgrade_entries)
-set /a mcdm=%dmva%+13
-mode con: cols=60 lines=%mcdm%
-cls
-echo.
-echo                         -SWAP MENU-
-echo.
-echo.
-echo  All available swap versions: (current v%ver%)
-for /R "%store%" %%A in (*) do (echo   -^> %%~nA ^(%%~zA bytes^))
-echo.
-echo  Input the codename of the version you wanna swap to.
-echo      Not ready to SWAP? Press [ENTER] to go back.
-set /p dc=^>^> 
-if not defined dc (goto version_menu)
-if not exist %store%%dc%.dsv goto nede
-copy %SN% %store%%ver%.dsv /y /v >nul
-copy %store%%dc%.dsv %cd%\sptdl.bat /y /v >nul
-del %config% /f /q >nul
-del %temp% /f /q >nul
-echo @echo off>>.\setup.bat
-echo title Swapping between versions>>.\setup.bat
-echo del /f /q SPOTYdl.bat>>.\setup.bat
-echo ren sptdl.bat SPOTYdl.bat>>.\setup.bat
-echo start SPOTYdl.bat>>.\setup.bat
-echo exit>>.\setup.bat
-start setup_menu.bat
-exit
-
-
-:no_available_downgrade_entries
-mode con: cols=51 lines=6
-cls
-echo.
-echo  There ain't any swap versions available.
-echo.
-echo  This menu will be unlocked as soon as you update.
-echo  Press any key to go back...
-pause >nul
-goto version_menu
-
-
-:list
+:ListSongsIntoFile
 set ftl=
-mode con: cols=72 lines=11
-if exist %curdir%.spotdl-cache (del %curdir%.spotdl-cache >nul)
+mode con: cols=72 lines=14
+if exist "!DownloadsFolder!.spotdl-cache" (del "!DownloadsFolder!.spotdl-cache" >nul)
 if exist SongList.txt (goto overwrite)
 cls
 echo.
@@ -1003,19 +1563,20 @@ echo.
 echo.
 echo   Chose the option that corresponds to the folder you wanna list:
 echo.
-echo    1^) "Downloads" folder
+echo    1^) "!DownloadsFolderAssignedName!" folder
 echo    2^) Select another folder
 echo.
+echo   Hit [ENTER] to go back.
+echo.
 set /p ftl=^>^> 
-if not defined ftl goto main_menu
-if %ftl%==1 (
-	set sfl=.\%downloads_folder%\*
-	goto slis   ting
+if not defined ftl goto MainMenu
+if !ftl!==1 (
+	set sfl=".\!DownloadsFolderAssignedName!\*"
+	goto SongsListing
 	)
-if %ftl%==2 (goto sfsl)
-echo  Sorry, but the value you entered is invalid. Try again!
-timeout /t 3 >nul
-goto ftl
+if !ftl!==2 (goto sfsl)
+call :invalid_input
+goto ListSongsIntoFile
 
 
 :sfsl
@@ -1029,17 +1590,17 @@ echo.
 echo   Input the location of the folder you wanna list it's music:
 echo.
 set /p sfsl=^>^> 
-set sfl=%sfsl%\
+set sfl="%sfsl%\"
 md %sfl% >nul
-if not %errorlevel%==0 (goto slisting) else (
+if not %errorlevel%==0 (goto SongsListing) else (
 	echo You have to input a valid folder location.
 	timeout /t 3 >nul
 	goto sfsl
 )
-goto :slisting
+goto :SongsListing
 
 
-:slisting
+:SongsListing
 cls
 echo.
 echo                            -SONGS listing-
@@ -1051,9 +1612,8 @@ for %%f in (%sfl%*) do @echo %%~nf >> SongList.txt
 for /f %%b in ('dir %sfl% ^| find "File(s)"') do (set lcount=%%b)
 echo   Done! %lcount% entries were registered to "SongList.txt"
 echo.
-echo   Press any key to go to the main menu...
-pause >nul
-goto main_menu
+call :PressAnyKeyToContinue
+goto MainMenu
 
 
 :overwrite
@@ -1066,541 +1626,192 @@ echo         Overwrite? (y/n)
 set /p o=^>^> 
 if %o%==y (
 	del SongList.txt
-	goto list
+	goto ListSongsIntoFile
 )
-if %o%==n (goto main_menu)
+if %o%==n (goto MainMenu)
 cls
-echo The value you entered is invalid. Try again!
-timeout /t 3 >nul
+call :invalid_input
 goto overwrite
 
+::fdssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+::fdssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+::fdssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+::fdssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
 
-:news
-title SPOTYdl - NEWS
-mode con: cols=66 lines=35
-color 4e
-if exist %temp%news.temp (del %temp%news.temp)
-powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/news.temp -Outfile %temp%news.temp" >nul
-if %errorlevel%==1 goto fail_github
-:news_read
-if not exist %temp%news.temp goto fail_github
-cls
-echo                               -NEWS-                             
-type %temp%news.temp |More
-echo.
-echo.
-echo       Congrats! You've read all available news for today!
-echo          Press any key to go back to the main menu.
-pause>nul
-goto main_menu
-
-
-:clnup
-echo.
-if %spotDL_ver%==4 goto success
-echo   Cleaning things up...
-del %curdir%.spotdl-cache >nul
-:success
-echo   Song(s) was(were) successfuly downloaded!
-powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Information; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your download is finished!', [System.Windows.Forms.ToolTipIcon]::None)}">nul
-echo.
-echo   Press any key to continue...
-pause >nul
-goto sstd
-
-
-:error1
-echo.
-echo  The song(s) you tried downloading failed.
-echo  ERRC: #3
-echo.
-echo  Please try again later...
-powershell -Command "& {Add-Type -AssemblyName System.Windows.Forms; Add-Type -AssemblyName System.Drawing; $notify = New-Object System.Windows.Forms.NotifyIcon; $notify.Icon = [System.Drawing.SystemIcons]::Error; $notify.Visible = $true; $notify.ShowBalloonTip(0, 'SPOTYdl', 'Your download failed...', [System.Windows.Forms.ToolTipIcon]::None)}">nul
-timeout /t 5 >nul
-goto search_song_menu
-
-
-:changelog
-if exist changelog.txt (del changelog.txt)
-echo|set /p "=Downloading the changelog now... " <nul
-powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/changelog.txt -Outfile %temp%changelog.txt" >nul
-if %errorlevel%==1 goto fail_github
-echo Done!
-timeout /t 1 >nul
-start %temp%changelog.txt
-goto version_menu
-
-
-:fail_github
-color 07
-mode con: cols=45 lines=4
+:SettingsMenu
+mode con: cols=60 lines=24
+if !BitrateRawValue!==64 (set BitrateRawValueWithSettingsDescriptor=64kbps - Low Audio Quality)
+if !BitrateRawValue!==128 (set BitrateRawValueWithSettingsDescriptor=128kbps - Medium Audio Quality)
+if !BitrateRawValue!==320 (set BitrateRawValueWithSettingsDescriptor=320kbps - Highest Audio Quality)
+set choice=
 cls
 echo.
-echo  Could not establish connection with GitHub.
-echo  Please try again later!
-timeout /t 4 > nul
-goto main_menu
-
-
-:disclaimer
-mode con: cols=57 lines=10
-cls
-echo.
-echo                      -Disclaimer-
+echo                           -Settings-
 echo.
 echo.
-echo   SPOTYdl is not endorsed by, directly affiliated with,
-echo  maintained, authorized, or sponsored by spotDL, 7zip,
-echo  pathed, Bluetooth Command Line Tools, ffmpeg or Python.
+echo  Available tweakable settings:
+echo   1) Default Bitrate: !BitrateRawValueWithSettingsDescriptor!
+echo   2) Downloads Folder Name: !DownloadsFolderAssignedName!
+echo   3) Directory in Title: !DirectoryInTitle!
+echo   4) Lyrics Provider: !SelectedLyricsProvider!
+echo   5) Check for Updates on Startup: !CheckForUpdatesOnStartup!
 echo.
-echo   Press any key to go back to settings...
-pause >nul
-goto settings
-
-
-:help
-mode con: cols=52 lines=12
-cls
+echo  Other options:
+echo   a) Save changes ^& exit
+echo   b) Exit without saving changes
+echo   c) Reset the app configuration
+echo   d) Help
 echo.
-echo                     -HELP file-
-echo.
-echo.
-echo   This script lets you download music using spotDL
-echo  more easily.
-echo   Start by chosing a song format (1-6), after that
-echo  type in the song link/name.
-echo.
-echo  Press any key to go back...
-pause >nul
-goto %hlp%
-
-
-:help_v
-mode con: cols=62 lines=9
-cls
-echo.
-echo                    -Version HELP file-
-echo.
-echo.
-echo   Here you cand check and download new updates for SPOTYdl.
-echo   The updating process takes no more than some milliseconds.
-echo.
-echo   Press any key to go back...
-pause >nul
-goto version_menu
-
-
-:about
-mode con: cols=103 lines=21
-cls
-echo.
-echo                                                -About-
-echo.
-echo.
-echo   I'm sure you've already googled on ways how to download Spotify songs without having to purchase the
-echo  "Premium" they offer us. In my research I found about spotDL, a project that helps people downloading
-echo  spotify songs for free and legally using youtube. Initially when I saw the whole setup_menu we have to do,
-echo  in order to start the usage, I abandoned. But after some more research I found out that spotDL was my
-echo  best choice. I installed it, and it worked nicely but it's not that motivating to open cmd every time
-echo  I wanna download a song. So I created SPOTYdl to run spotDL's commands without having to remember all
-echo  the needed commands. Working great but, I wanted to publish it. So I prepaired the script to download
-echo  and setup_menu spotDL and its requirements automaticaly, so you don't need to go through all the hassle of
-echo  installation nor usage. :D
-echo  And here we are!
-echo.
-echo                                       Welcome to SPOTYdl V%ver%!
-echo   by GabiBrawl, 21st march 2022
-echo.
-echo   Press any key to go back...
-pause >nul
-goto settings
-
-
-
-
-
-:spotDL_trouble
-mode con: cols=54 lines=14
-cls
-echo.
-echo   Hey there! You can't simply run this script without
-echo  installing spotDL first... There's a script on my
-echo  github to automate the installation!
-echo.
-echo.
-echo   ERRC: #1
-echo   ERROR CODE: spotdl was not recognized as a command.
-echo    - Maybe your settings are incorrect? Try changing
-echo  the currently defined spotDL version. Current: v%spotDL_ver%
-echo.
-echo   Press any key to go to the main menu...
-pause >nul
-goto main_menu
-
-
-:aure
-mode con: cols=51 lines=10
-if not exist %store% (md %store%)
-if not exist %temp% (md %temp%)
-set downloads_folder=Downloads
-cls
-echo.
-echo              Welcome back to SPOTYdl!
-echo.
-echo.
-echo   We've just reset the app's configuration, so you
-echo  gotta do some configurations to continue.
-echo.
-echo   Press any key to start...
-pause >nul
-goto ----1----
-:reset
-mode con: cols=51 lines=10
-if not exist %store% (md %store%)
-if not exist %temp% (md %temp%)
-set downloads_folder=Downloads
-cls
-echo.
-echo              Welcome back to SPOTYdl!
-echo.
-echo.
-echo   You've just reset the app configuration, so you
-echo  gotta do some configurations to continue.
-echo.
-echo   Press any key to start...
-pause >nul
-goto ----1----
-:first_run
-mode con: cols=56 lines=10
-if not exist %store% (md %store%)
-if not exist %temp% (md %temp%)
-set downloads_folder=Downloads
-set atd=disabled
-set cfu=enabled
-cls
-echo.
-echo                   Welcome to SPOTYdl!
-echo.
-echo.
-echo   Seems like it's your first time running this app, so
-echo  you gotta do some configurations to continue.
-echo.
-echo   Press any key to start...
-pause >nul
-:----1----
-mode con: cols=63 lines=7
-cls
-echo.
-echo   Firstly, do you want us to create a history file to
-echo  store your downloads history? (y/n)
-echo.
-set /p history=^>^> 
-if not defined history (
-	echo   You gotta chose between y/n ^(yes or no^). Try again!
-	timeout /t 3 >nul
-	goto ----1----
+echo  Input the value that corresponds to your choice
+set /p choice=^>^> 
+if not defined choice (
+	call :blank_input
+	goto SettingsMenu
 )
-if %history%==y (set history=true) 
-if %history%==n (set history=false)
-:----2----
-cls
-mode con: cols=63 lines=7
-cls
-echo.
-echo   Nextly, what's your desired bitrate when downloading songs?
-echo                          (64/128/320)
-echo.
-set /p bitrate=^>^> 
-if not %bitrate%==64 (if not %bitrate%==128 (if not %bitrate%==320 (echo  SPOTYdl only supports 64, 128 and 320kbps. Try again! && timeout /t 5 >nul && goto ----2----)))
-:----3----
-cls
-mode con: cols=59 lines=7
-cls
-echo.
-echo   Finnaly, what version of spotDL have you got installed?
-echo                           (3/4)
-echo.
-set /p spotDL_ver=^>^> v
-if not %spotDL_ver%==3 (if not %spotDL_ver%==4 (echo  SPOTYdl only supports v3 and v4. Try again! && timeout /t 5 >nul && goto ----3----))
-:---save---
-md %data%
-(
-	echo %history%
-	echo %bitrate%
-	echo %spotDL_ver%
-	echo %downloads_folder%
-	echo %atd%
-	echo %cfu%
-) >%config%
-mode con: cols=62 lines=7
-cls
-echo.
-echo   Congrats! You have ended the initial configuration!
-echo.
-echo   Press any key to begin the app usage...
-pause >nul
-< %config% (
-	set /p history=
-	set /p bitrate=
-	set /p spotDL_ver=
-	set /p downloads_folder=
-	set /p atd=
-	set /p cfu=
+if "!choice!"=="1" (if "!BitrateRawValue!"=="64" (set "BitrateRawValue=128") else if "!BitrateRawValue!"=="128" (set "BitrateRawValue=320") else (set "BitrateRawValue=64")) && goto SettingsMenu
+if !choice!==2 (goto RenameDownloadsFolder)
+if !choice!==3 (if !DirectoryInTitle!==enabled (set DirectoryInTitle=disabled) else (set DirectoryInTitle=enabled)) && goto SettingsMenu
+if !choice!==4 (if !SelectedLyricsProvider!==genius (set SelectedLyricsProvider=musixmatch) else (if !SelectedLyricsProvider!==musixmatch (set SelectedLyricsProvider=azlyrics) else (if !SelectedLyricsProvider!==azlyrics (set SelectedLyricsProvider=genius)))) && goto SettingsMenu
+if !choice!==5 (if !CheckForUpdatesOnStartup!==enabled (set CheckForUpdatesOnStartup=disabled) else (set CheckForUpdatesOnStartup=enabled)) && goto SettingsMenu
+if !choice!==a (
+	call :WriteConfig
+	goto MainMenu
 )
-goto folder_chk
+if !choice!==b (goto RestartScript)
+if !choice!==c (goto ResetConfig)
+if !choice!==d (goto SettingsHelp)
+call :InvalidInput
+goto SettingsMenu
 
 
-:dfns
+:SettingsHelp
+mode con: cols=75 lines=35
+cls
+echo.
+echo                           -HELP file- 1/2
+echo.
+echo.
+echo.
+echo   Can seem big, but contains the info to almost all questions!
+echo.
+echo   Here you can change some configurations for the current logged user.
+echo   Below you got a detailed explanation for each single setting.
+echo.
+echo   1) Default Bitrate:
+echo        This setting will permit you to modify the default bitrate value
+echo       when downloading songs. You will still be able to set it in the
+echo       temporary choice from within the main menu.
+echo       The higher the bitrate, the better the quality, but the bigger
+echo       the file size. If you change it from within the main menu, it'll be a
+echo       temporary change, and will be reverted to the default one when
+echo       you exit the app.
+echo   2) Downloads Folder Name:
+echo        This setting will permit youto rename the folder where the
+echo       downloaded songs are getting stored.
+echo.
+echo   Press any key to go to the next page...
+pause >nul
+cls
+echo.
+echo                           -HELP file- 2/2
+echo.
+echo.
+echo   3) Directory in Title:
+echo        If enabled, the directory from where the script is baing ran
+echo       will be displayed in the title. If disabled, the title will
+echo       be neater. Useful if downloading into multiple folders.
+echo   4) Lyrics Provider:
+echo        This setting will change the lyrics provider used to download
+echo       lyrics. The default provider is genius. If you want to use
+echo       musixmatch, you need to have spotDL v4 installed.
+echo   5) Check for Updates on startup:
+echo        This setting will enable or disable the automatic update
+echo       check. If enabled, we will check for updates every time
+echo       you run the script.
+echo   a) Save changes ^& exit:
+echo        This option will save the changes you made to the settings
+echo       and exit the settings menu.
+echo   b) Exit without saving changes:
+echo        This option will exit the settings menu without saving the
+echo       changes you made.
+echo   c) Reset the app configuration:
+echo        This option will reset the app configuration to the default
+echo       one. This won't delete the history file nor songs.
+echo   d) Help:
+echo        This option will open this help file.
+echo.
+echo   Press any key to back to the settings menu...
+pause >nul
+goto SettingsMenu
+
+
+:RenameDownloadsFolder
 mode con: cols=50 lines=13
 set nn=
 cls
 echo.
 echo   Chose the new name for the Downloads folder.
+echo       Please don't use spaces in the name.
 echo              Hit ^[ENTER^] to go back
 echo                 Use -r to reset
 echo.
 echo.
 set /p nn=^>^> 
-if not defined nn (goto settings)
-if %nn%==-r (rename %downloads_folder% Downloads && set downloads_folder=Downloads&& goto ss)
-rename %downloads_folder% %nn%
-if %errorlevel%==1 (
-	echo  There was an error while processing the request.
-	echo  ERRC: #2
-	echo.
-	echo  Press any key to go back
-	pause >nul
-	goto settings
-)
-set downloads_folder=%nn%
-goto ss
-
-
-:user_info_menu
-set choice=
-cls
-echo.
-echo                                 -User info-
-echo.
-echo.
-echo  Welcome back %logged_username%!
-echo  Here are the available account management options:
-echo.
-echo   1^) Logout
-echo   2^) Change password
-echo   3^) Delete account, doesn't delete downloaded songs.
-echo.
-echo  Other options:
-echo   [ENTER] Go back
-echo.
-set /p choice=^>^>
-if not defined choice goto :main_menu
-if %choice%==1 (goto :login_menu)
-if %choice%==2 (goto :change_password)
-if %choice%==3 (
-	del %users%\%logged_username%\ /f /q
-	rmdir %users%\%logged_username%\
-	goto :login_menu
-)
-echo   That's an invalid option. Try again!
-timeout /t 3 >nul
-goto user_info_menu
-
-:config_error
-mode con: cols=46 lines=9
-cls
-echo.
-echo             -Configuration update-
-echo.
-echo.
-echo   Seems like you updated to this version and
-echo  newer features were introduced since then..
-echo.
-echo   Press any key to run the configuration...
-pause >nul
-goto first_run
-
-
-:change_password
-if exist %users%%logged_username%/psw.id (
-    < %users%%logged_username%/psw.id (
-    	set /p psw=
-    )
-) else (
-    goto set_new_password
-)
-set input=
-cls
-echo.
-echo                                 -Password-
-echo.
-echo.
-echo  Enter %logged_username%'s password to proceed.
-echo  Other options:
-echo   [ENTER] Go Back
-echo.
-set /p input=^>^>
-if not defined input (goto user_info_menu)
-if not %input%==%psw% (
-	echo  Wrong input. Try again!
+if not defined nn (goto installation_settings)
+if "!nn!"=="!DownloadsFolderAssignedName!" (
+	echo  The new name is the same as the old one...
 	timeout /t 3 >nul
-	goto change_password
+	goto RenameDownloadsFolder
 )
-:set_new_password
-set input=
-cls
-echo.
-echo                                 -Password-
-echo.
-echo.
-echo  Input your new password:
-echo   Is case sensitive
-echo   [ENTER] Removes the current password, if any is set
-echo.
-set /p input=^>^> 
-if not defined input (del %users%%logged_username%\psw.id /f /q) else (echo %input%>%users%%logged_username%\psw.id)
-goto user_info_menu
-
-
-:login_menu
-title SPOTYdl - Login menu
-if exist %logged% (del %logged%)
-if not exist %users% (goto :register_admin)
-if not exist "%users%Admin\" (goto :register_admin)
-for /f %%b in ('dir %users% ^| find "Dir(s)"') do (set dmva=%%b)
-set /a mcdm=%dmva%+10
-set count=0
-set usrn=
-mode con: cols=60 lines=%mcdm%
-cls
-echo.
-echo                            -LogIn-
-echo.
-echo.
-echo  All available users:
-setlocal enabledelayedexpansion
-set count=0
-for /F "delims=" %%A in ('dir /a:d /b %users%*') do (
-    REM Increment %count% here so that it doesn't get incremented later
-    set /a count+=1
-    REM Add the file name to the options array
-    set "options[!count!]=%%A"
-	set /a value+=1
-	set !value!=%%A
-)
-for /f %%b in ('dir %users% ^| find "Folder(s)"') do (set fc=%%b)
-:: Type each user's name
-for /L %%A in (1,1,!count!) do echo   %%A^) !options[%%A]!
-echo.
-echo  Other Options:
-echo   [ENTER] Register New User
-echo.
-set /p usrn=^>^> 
-if not defined usrn (goto register_new_user)
-for /L %%A in (1,1,!count!) do (if %usrn%==%%A (set usrn=!options[%%A]!))
-
-
-:password_check
-if exist %users%%usrn%/psw.id (
-    < %users%%usrn%/psw.id (
-    	set /p psw=
-    )
-) else (
-    goto :sui
-)
-:pass_input
-set input=
-cls
-echo.
-echo                            -LogIn-
-echo.
-echo.
-echo  Enter %usrn%'s password.
-echo  Other options:
-echo   [ENTER] Go Back
-echo.
-set /p input=^>^>
-if not defined input (goto login_menu)
-if not %input%==%psw% (
-	echo  Wrong input. Try again!
-	timeout /t 3 >nul
-	goto pass_input
-)
-:sui
-del %logged% /f /q
-(
-	echo %usrn%
-) >%logged%
-:rui
-< %logged% ( 
-	set /p logged_username=
-)
-if exist %users%%usrn%\user.id (goto main_menu) else (
-	echo  That username isn't registered yet.
-	timeout /t 4 >nul
-	goto login_menu
-)
-
-
-:register_admin
-md "%users%Admin"
-echo Admin>>"%users%Admin\user.id"
-set choice=
-cls
-echo.
-echo                      -Admin registration-
-echo.
-echo.
-echo   Enter the Admin account's password.
-echo   This account won't be like a normal account. It'll be the
-echo  Control Panel for some settings and upcomming features.
-set /p choice=^>^>
-echo %choice%>%users%Admin/psw.id
-
-
-
-:register_new_user
-mode con: cols=60 lines=13
-set new_username=
-cls
-echo.
-echo                     -New User Registration-
-echo.
-echo.
-echo   Chose your desired username wisely!
-echo   Rules: No Spaces, No Special Characters.
-echo   If you break the rules, you may brick this
-echo  script.
-echo.
-echo  Other options:
-echo   [ENTER] Go Back
-echo.
-set /p new_username=^>^> 
-if not defined new_username (goto login_menu)
-if exist "%users%\%new_username%\user.id" (
-	echo  Oops! That username is already taken. Try again.
-	timeout /t 3 >nul
-	goto register_new_user
-) else (
-	if not "%VAR%"=="%VAR:^%%" (
-		md "%users%%new_username%"
-		echo %new_username%>>"%users%%new_username%\user.id"
-		echo  Wowza! New username was successfuly registered.
-		timeout /t 4 >nul
-		goto login_menu
-	) else (
-		echo  No spaces or special characters allowed.
+set "containsSpaces=false"
+for %%A in (!nn!) do (
+    if "%%A"==" " (
+        echo  The new name can't contain spaces. Try again^^^!
 		timeout /t 3 >nul
-		goto login_menu
-	)
+		goto RenameDownloadsFolder
+    )
 )
+if "!nn!"=="-r" (
+	rename !DownloadsFolderAssignedName! Downloads
+    set DownloadsFolderAssignedName=Downloads
+	call:WriteConfig
+	goto RestartScript
+)
+rename !DownloadsFolderAssignedName! !nn!
+if !errorlevel!==1 (
+	call :FolderRenamingTrouble
+)
+set DownloadsFolderAssignedName=!nn!
+call:WriteConfig
+goto RestartScript
 
 
-:bsync
+:FolderRenamingTrouble
+mode con: cols=75 lines=16
+cls
+echo.
+echo                                -ERROR-
+echo.
+echo.
+echo   There was an error while trying to rename the downloads folder.
+echo.
+echo   Check if there is any other folder with the same name or if any song
+echo  is playing from your folder. To retry press r and hit [ENTER]. To
+echo  set the download directory into an existing folder use y, to go back
+echo  use n.
+set /p input=y/n/r^>^> 
+if !input!==y (set downloads_folder=!nn!&& goto write_config)
+if !input!==n (goto settings)
+if !input!==r (goto renaming_downloads_folder)
+call :invalid_input
+exit /b
+
+
+::start of BSync-----------------------------------------------------------------------------------------------------
+:BSync
 set choice=
-set devid=%users%%logged_username%\device.id
-< %users%%logged_username%\device.id (
-	set /p devname=
+< !BSyncId! (
+	set /p BluetoothDeviceIdRaw=
 )
 cls
 echo.
@@ -1609,28 +1820,24 @@ echo.
 echo.
 echo  Main Options:
 echo   1) Start Syncing
-echo   b) Start Syncing (NOT READY)
-echo   2) Target Device ID: %devname%
+echo   b) Start Syncing (BETA, USE AT YOUR OWN RISK)
+echo   2) Target Device ID: %BluetoothDeviceIdRaw%
 echo.
 echo  Other Options:
 echo   a) Help
 echo   [ENTER] Go Back
 echo.
 set /p choice=^>^> 
-if not defined choice (goto main_menu)
-if %choice%==b (goto transfer)
-if %choice%==1 (
-	set goto=transfer_2
-	goto device_id
-)
-if %choice%==2 (
-	set goto=bsync
-	goto device_id
-)
+if not defined choice (goto more_options)
+if !choice!==b (goto transfer)
+if !choice!==1 (set goto=transfer_2 && goto device_id)
+if !choice!==2 (set goto=BSync && goto device_id)
+call :invalid_input
+goto BSync
 
 
 :device_id
-set devname=
+set BluetoothDeviceIdRaw=
 set device_id=
 cls
 echo.
@@ -1639,16 +1846,16 @@ echo.
 echo.
 echo   Please pair your target device, and type in the
 echo  device's name.
-set /p devname=^>^> 
-if exist %devid% del %devid%
-echo %devname%>%devid%
-goto %goto%
+set /p BluetoothDeviceIdRaw=^>^> 
+if exist !devid! del !devid!
+echo !BluetoothDeviceIdRaw!>!devid!
+goto !goto!
 
 
 :transfer
-set synced=%users%%logged_username%\synced_%devname%.txt
-if not exist %synced% (echo.> "%synced%")
-if not exist %devid% (
+set synced=!users!!logged_username!\synced_!BluetoothDeviceIdRaw!.txt
+if not exist !synced! (echo.> "!synced!")
+if not exist !devid! (
 	set goto=transfer
 	goto device_id
 )
@@ -1658,7 +1865,7 @@ echo                             -Transferring-
 echo.
 echo.
 echo   Check your target device for any incoming transfers!
-for /f %%b in ('dir %curdir% ^| find "File(s)"') do (set ttl=%%b)
+for /f %%b in ('dir !curdir! ^| find "File(s)"') do (set ttl=%%b)
 setlocal EnableDelayedExpansion
 for %%A in (!curdir!*) do (
 	findstr /m "%%~nA" "!synced!" >nul
@@ -1669,7 +1876,7 @@ for %%A in (!curdir!*) do (
 		echo  Total #!ttl!; Song #!dwl!; Success #!scs!; Failed #!err!
 		echo  Estimated remaining time: !ttl_time!
 		set v1=!time!
-		btobex -n"%devname%" "!curdir!%%~nA%%~xA"
+		btobex -n"!BluetoothDeviceIdRaw!" "!curdir!%%~nA%%~xA"
 		set v2=!time!
 		set /a remaining_songs=!ttl!-!dwl!
 		set /a ft=!v2!-!v1!
@@ -1686,8 +1893,7 @@ for %%A in (!curdir!*) do (
 )
 endlocal
 pause >nul
-goto bsync
-
+goto BSync
 
 
 :transfer_2
@@ -1696,158 +1902,58 @@ echo.
 echo                             -Transferring-
 echo.
 echo.
-for /f %%b in ('dir %users% ^| find "File(s)"') do (set dmva=%%b)
-set /a rmt=%dmva%+%dmva%
-echo   This job will take around %rmt% minutes. Started on %time%  
-btobex -n"%devname%" %curdir%*
+for /f %%b in ('dir !users! ^| find "File(s)"') do (set dmva=%%b)
+set /a rmt=!dmva!+!dmva!
+echo   This job will take around !rmt! minutes. Started on !time!  
+btobex -n"!BluetoothDeviceIdRaw!" !curdir!*
 echo  Done!
-pause >nul
-echo  Press any key to continue...
-goto main_menu
-
-
-
-
-:settings
-mode con: cols=60 lines=22
+call:PressAnyKeyToContinue
+goto MainMenu
+::end of BSync-----------------------------------------------------------------------------------------------------
+::start of manual audio matching----------------------------------------------------------------------------------------------------------------------------
+:ManualAudioMatchingMenu
+set echoNotDefinedText=  Hit [ENTER] to go back, or define the values 1 to 3 to download
 set choice=
-cls
-echo.
-echo                           -Settings-
-echo.
-echo.
-echo  Available tweakable settings:
-echo   1) History: %history%
-echo   2) Bitrate: %bitrate%
-echo   3) spotDL: v%spotDL_ver%
-echo   4) Folder Name: %downloads_folder%
-echo   5) Title dir info: %atd%
-::echo   6) Version Check: %cfu%
-echo.
-echo  Other options:
-echo   a) Save changes ^& exit
-echo   b) Exit without saving changes
-echo   c) Reset the app configuration
-echo   d) About SPOTYdl
-echo   e) Disclaimer
-echo.
-echo  Input the value that corresponds to your choice
-set /p choice=^>^> 
-if not defined choice (
-	echo  You can't leave this feald in blank. Try again!
-	timeout /t 3 >nul
-	goto settings
-)
-if %choice%==1 (if %history%==true (set history=false) else (set history=true)) && goto settings
-if %choice%==2 (goto bs)
-if %choice%==3 (if %spotDL_ver%==3 (set spotDL_ver=4) else (set spotDL_ver=3)) && goto settings
-if %choice%==4 (goto dfns)
-if %choice%==5 (if %atd%==enabled (set atd=disabled) else (set atd=enabled)) && goto settings
-::if %choice%==6 (if %cfu%==enabled (set cfu=disabled) else (set cfu=enabled)) && goto settings
-if %choice%==a (goto ss)
-if %choice%==b (goto reload)
-if %choice%==c (goto rs)
-if %choice%==d (goto about)
-if %choice%==e (goto disclaimer)
-echo  Invalid choice. Please try again!
-timeout /t 3 >nul
-goto settings
-
-
-:bs
-mode con: cols=32 lines=16
-set sh=
-cls
-echo.
-echo    Chose your desired bitrate:
-echo          64 - Low Audio Quality
-echo         128 - Medium Audio Quality
-echo         320 - High Audio Quality
-echo     [ENTER] - Go back
-echo.
-echo.
-set /p bs=^>^> 
-if not defined bs goto settings
-if %bs%==64 (
-	set bitrate=64
-	goto settings
-)
-if %bs%==128 (
-	set bitrate=128
-	goto settings
-)
-if %bs%==320 (
-	set bitrate=320
-	goto settings
-)
-echo  Invalid choice. Please try again!
-timeout /t 3 >nul
-goto bs
-
-
-:ss
-del %config% /f /q
-(
-	echo %history%
-	echo %bitrate%
-	echo %spotDL_ver%
-	echo %downloads_folder%
-	echo %atd%
-) >%config%
-:reload
-< %config% (
-	set /p history=
-  	set /p bitrate=
-	set /p spotDL_ver=
-	set /p downloads_folder=
-	set /p atd=
-)
-goto main_menu
-:rs
-del %config% /f /q
-goto reset
-
-
-:manual_audio_matching
-set mam=
-if not defined format set format=not defined
-if not defined yt_url set yt_url=not defined
-if not defined sp_url set sp_url=not defined
 mode con: cols=80 lines=16
 cls
 echo.
 echo                              -Manual Audio Matching-
 echo.
 echo.
-echo  1) Audio file format: %format%
-echo  2) YouTube URL: %yt_url%
-echo  3) Spotify URL: %sp_url%
+echo   1) Audio file format: !format!
+echo   2) YouTube URL: !YouTubeUrl!
+echo   3) Spotify URL: !SpUrl!
 echo.
-echo  To start downloading hit [ENTER] when all values are defined, otherwise
-echo [ENTER] will go back.
-echo.
-echo  Chose a value to define then hit [ENTER]:
-set /p mam=^>^> 
-if not defined mam (
-	if not defined format (
-       goto main_menu) else (
-          if not defined yt_url (
-             goto main_menu) else (
-		  	 if not defined sp_url (
-             goto main_menu) else (
-					goto manual_audio_matching_download
-          )
-       )
-    )
+if not defined choice (
+	if "!format!"=="not defined" (echo !echoNotDefinedText!) else (
+		if "!YouTubeUrl!"=="not defined" (echo !echoNotDefinedText!) else (
+			if "!SpUrl!"=="not defined" (echo !echoNotDefinedText!) else (
+				echo   Hit [ENTER] to start downloading.
+			)
+		)
+	)
 )
-if %mam%==1 goto manual_audio_matching_format
-if %mam%==2 goto manual_audio_matching_yt_url
-if %mam%==3 goto manual_audio_matching_sp_url
-echo  Invalid choice. Please try again!
-timeout /t 3 >nul
-goto manual_audio_matching
+echo.
+echo   Chose a value to define then hit [ENTER]:
+set /p choice=^>^> 
+if not defined choice (
+	if "!format!"=="not defined" goto MainMenu else (
+		if "!YouTubeUrl!"=="not defined" goto MainMenu else (
+			if "!SpUrl!"=="not defined" goto MainMenu else (
+				goto ManualAudioMatchingDownloading
+			)
+		)
+	)
+)
+if !choice!==1 goto ManualAudioMatchingFormat
+if !choice!==2 goto ManualAudioMatchingYtUrl
+if !choice!==3 goto ManualAudioMatchingSpUrl
+call :invalid_input
+goto ManualAudioMatchingFormat
 
-:manual_audio_matching_format
+
+:ManualAudioMatchingFormat
+set choice=
 set format=
 mode con: cols=80 lines=16
 cls
@@ -1858,70 +1964,81 @@ echo.
 echo  Available audio file formats:
 echo   1) mp3                      4) opus
 echo   2) m4a                      5) ogg
-if %spotDL_ver%==3 (echo   3^) flac                     6^) wav) else (echo   3^) flac)
+echo   3^) flac
 echo.
 echo  Input the value that corresponds to your choice.
-set /p format=^>^> 
-if %format%==1 (set format=mp3&& goto manual_audio_matching)
-if %format%==2 (set format=m4a&& goto manual_audio_matching)
-if %format%==3 (set format=flac&& goto manual_audio_matching)
-if %format%==4 (set format=opus&& goto manual_audio_matching)
-if %format%==5 (set format=ogg&& goto manual_audio_matching)
-if %format%==6 (if %spotDL_ver%==3 (set format=wav&& goto manual_audio_matching) else (echo  Sorry, but that feature is only available with spotDL v3&& timeout /t 3 >nul&& goto set_audio_file_format))
-echo   Invalid input. Try again!
-timeout /t 3 >nul
-goto manual_audio_matching_format
+set /p choice=^>^> 
+if not defined choice goto ManualAudioMatchingMenu
+if !choice!==1 (set format=mp3&& goto ManualAudioMatchingMenu)
+if !choice!==2 (set format=m4a&& goto ManualAudioMatchingMenu)
+if !choice!==3 (set format=flac&& goto ManualAudioMatchingMenu)
+if !choice!==4 (set format=opus&& goto ManualAudioMatchingMenu)
+if !choice!==5 (set format=ogg&& goto ManualAudioMatchingMenu)
+call :invalid_input
+goto ManualAudioMatchingFormat
 
-:manual_audio_matching_yt_url
-mode con: cols=66 lines=12
-set yt=
+
+:ManualAudioMatchingYtUrl
+set YouTubeUrl=
 cls
 echo.
-echo                   -Manual Audio Matching-
-echo                         YouTube URL
+echo                              -Manual Audio Matching-
+echo                                    YouTube URL
 echo.
 echo.
-echo   Input the YouTube song URL. It's form there that we'll
-echo  get the song downloaded from.
+echo   Input the YouTube song URL. It's form there that we'll get the song
+echo  downloaded from. To paste, use your mouse right button click.
 echo.
-set /p yt_url= YT^>^> 
-if not defined yt_url goto manual_audio_matching
-echo "%yt_url%"|findstr /R "[%%#^&^^^^@^$~!]" 1>nul
+set /p YouTubeUrl= YT^>^> 
+if not defined YouTubeUrl goto ManualAudioMatchingMenu
+echo "%YouTubeUrl%"|findstr /R "[%%#^&^^^^@^$~!]" 1>nul
 if %errorlevel%==0 (
     echo.
     echo   Invalid song name: "%link%"
     echo   Please remove special symbols: "%#&^@$~!"
     timeout /t 6 >nul
-	 set yt_url=
-    goto manual_audio_matching_yt_url
+	 goto ManualAudioMatchingYtUrl
 )
-goto manual_audio_matching
+if "x!YouTubeUrl:https://www.youtube.com/watch?v=!"=="x!YouTubeUrl!" call :invalidYoutubeUrl && goto ManualAudioMatchingYtUrl
+if "x!YouTubeUrl:www.youtube.com/watch?v=!"=="x!YouTubeUrl!" call :invalidYoutubeUrl && goto ManualAudioMatchingYtUrl
+if "x!YouTubeUrl:youtube.com/watch?v=!"=="x!YouTubeUrl!" call :invalidYoutubeUrl && goto ManualAudioMatchingYtUrl
+goto ManualAudioMatchingMenu
 
-:manual_audio_matching_sp_url
-set sp_url=
+
+:ManualAudioMatchingSpUrl
+set SpUrl=
 cls
 echo.
-echo                   -Manual Audio Matching-
-echo                         Spotify URL
+echo                              -Manual Audio Matching-
+echo                                    Spotify URL
 echo.
 echo.
-echo   Input the Spotify song URL. It's form there that we'll
-echo  get the metadata downloaded from.
+echo   Input the Spotify song URL. It's form there that we'll get the metadata
+echo  downloaded from. To paste, use your mouse right button click.
+echo   If applicable, remove everything after ?= to get the song URL.
 echo.
-set /p sp_url=SP^>^> 
-if not defined sp_url goto manual_audio_matching
-echo "%sp_url%"|findstr /R "[%%#^&^^^^@^$~!]" 1>nul
+set /p SpUrl=SP^>^> 
+if not defined SpUrl goto ManualAudioMatchingMenu
+echo "%SpUrl%"|findstr /R "[%%#^&^^^^@^$~!]" 1>nul
 if %errorlevel%==0 (
     echo.
 	 echo   Invalid song name: "%link%"
 	 echo   Please remove special symbols: "%#&^@$~!"
     timeout /t 6 >nul
-	 set sp_url=
-	 goto manual_audio_matching_sp_url
+	 goto ManualAudioMatchingSpUrl
 )
-goto manual_audio_matching
+setlocal enableextensions enabledelayedexpansion
+if x!SpUrl:https://open.spotify.com/!==x!SpUrl! call :invalidSpotifyUrl && goto ManualAudioMatchingSpUrl
+if x!SpUrl:open.spotify.com/!==x!SpUrl! call :invalidSpotifyUrl && goto ManualAudioMatchingSpUrl
+endlocal
+goto ManualAudioMatchingMenu
+:invalidSpotifyUrl
+echo  Only Spotify URLs are supported. Try again.
+timeout /t 3 >nul
+exit /b
 
-:manual_audio_matching_download
+
+:ManualAudioMatchingDownloading
 cls
 echo.
 echo                   -Manual Audio Matching-
@@ -1931,79 +2048,248 @@ echo   We're now downloading the desired song, with the selected
 echo  metadata. One moment plase...
 echo.
 cls
-set mam_download_command="%yt_url%|%sp_url%"
-if %history%==true (echo %mam_download_command%>>history.txt)
-if %debug%==false (
-	if %spotDL_ver%==3 (
-		spotdl %mam_download_command% --output-format %format% --output %curdir%
-	) else (
-		spotdl download %mam_download_command% --format %format% --output %curdir% --bitrate %kbps%
-	)
+set ManualAudioDownloaderCommand="!YouTubeUrl!|!SpUrl!"
+if !history!==true (echo !ManualAudioDownloaderCommand!>>!history_file!.txt)
+if !spotDLVersion!==3 (
+	if !DebugState!==true (echo spotdl !ManualAudioDownloaderCommand! --output-format !format! --output !DownloadsFolderDirectory! --lyrics !SelectedLyricsProvider! --log-level DEBUG)
+	spotdl !ManualAudioDownloaderCommand! --output-format !format! --output !DownloadsFolderDirectory! --lyrics !SelectedLyricsProvider!
 ) else (
-	if %spotDL_ver%==3 (
-		echo spotdl %mam_download_command% --output-format %format% --output %curdir% --log-level DEBUG
-		spotdl %mam_download_command% --output-format %format% --output %curdir% --log-level DEBUG
-		pause
+	if !DebugState!==true (echo spotdl download !ManualAudioDownloaderCommand! --format !format! --output !DownloadsFolderDirectory! --bitrate !kbps! --lyrics !SelectedLyricsProvider! --log-level DEBUG)
+	spotdl download !ManualAudioDownloaderCommand! --format !format! --output !DownloadsFolderDirectory! --bitrate !kbps! --lyrics !SelectedLyricsProvider!
+)
+set NextGoto=MainMenu
+if !errorlevel! == 0 goto CleanUp
+if !errorlevel! == 1 goto Error1
+goto spotDLTrouble
+::end of manual audio matching----------------------------------------------------------------------------------------------------------------------------
+
+
+:spotDLTrouble
+mode con: cols=54 lines=14
+cls
+echo.
+echo   Hey there! You can't simply run this script without
+echo  installing spotDL first... There's a setup on the
+echo  main menu to automate the installation!
+echo.
+echo.
+echo   ERRC: #1
+echo   ERROR: spotdl was not recognized as a command.
+echo    - Maybe your settings are incorrect? Try changing
+echo   the currently defined spotDL version. Current: v%spotDL_ver%
+echo.
+echo   Press any key to go to the main menu...
+pause >nul
+goto MainMenu
+
+
+:reset
+mode con: cols=46 lines=11
+cls
+set confirm1=
+cls
+echo.
+echo         -CONFIRMATION TO RESET SPOTYdl-
+echo.
+echo.
+echo   WARNING! THIS WILL ERASE ALL CONFIGURATIONS.
+echo   THIS ACTION IS IRREVERSIBLE! CONFIRM? (y/n)
+echo.
+set /p confirm1=^>^> 
+if %confirm1%==n (goto InitialVariableLoad)
+if %confirm1%==y (goto reset_doublecheck)
+call :invalid_input
+goto reset
+:reset_doublecheck
+set confirm2=
+set /p confirm2= Double check ^>^> 
+if %confirm2%==n (goto InitialVariableLoad)
+if %confirm2%==y (goto reset_confirmed)
+call :invalid_input
+goto reset_doublecheck
+:reset_confirmed
+set "%~n1="
+cls
+echo.
+echo              -RESETTING THE SYSTEM-
+echo.
+echo.
+echo   Deleting configuration files...
+del /F /Q "!ConfigFile!" >nul
+echo.
+echo   Job done! Exiting...
+timeout /t 2 >nul
+exit
+
+
+:FirstRun
+mode con: cols=56 lines=12
+if not exist "!StoreDirectory!" (md "!StoreDirectory!")
+if not exist "!TempDirectory!" (md "!TempDirectory!")
+cls
+echo.
+echo                   -Welcome to SPOTYdl-
+echo                      Got 2 minutes?
+echo.
+echo.
+echo   It's your first time running this app, so we gotta
+echo  make some configurations to proceed.
+echo   If your Windows username has spaces in it, you
+echo  might have some trouble with this script.
+echo.
+echo   Press any key to start...
+pause >nul
+:NewUserQuestion1
+set choice=
+cls
+mode con: cols=59 lines=8
+cls
+echo.
+echo   Do you have python, spotDL and ffmpeg installed? (y/n)
+echo   If you don't know what those mean, use n and hit [Enter].
+echo.
+set /p choice=^>^> 
+if !choice!==y (goto SaveNewUserConfig)
+if !choice!==n (goto NewUserDoesntHaveNeededTools)
+call :InvalidInput
+goto NewUserQuestion1
+:NewUserDoesntHaveNeededTools
+cls
+mode con: cols=56 lines=16
+set choice=
+cls
+echo.
+echo   Do you want to run the setup now? (y/n)
+echo  Administrative priviledges are required.
+echo.
+set /p choice=^>^>
+if !choice!==y (goto SetupMenu)
+if !choice!==n (
+	echo   The script will now exit to avoid any possible
+	echo  corruptions in the configurations. Please run the
+	echo  setup when you're ready.
+	echo.
+	echo   Press any key to exit...
+	pause >nul
+	exit /b
+)
+call :InvalidInput
+goto NewUserDoesntHaveNeededTools
+:SaveNewUserConfig
+md !DataDirectory!
+set BitrateRawValue=128
+set CheckForUpdatesOnStartup=enabled
+set SelectedLyricsProvider=genius
+set DirectoryInTitle=disabled
+call :WriteConfig
+mode con: cols=62 lines=15
+cls
+echo.
+echo   Congrats! You have ended the initial configuration.
+echo.
+echo   Things to bear in mind:
+echo   - You can change the configurations at any time by
+echo    going to settings, in the main menu.
+echo   - For extra help, visit the Help menu.
+echo.
+echo   Press any key to begin the app usage...
+pause >nul
+call :LoadConfig
+goto RestartScript
+
+
+::Calls lead to here
+:LoadConfig
+echo  - %time% Started Loading Configuration File
+< !ConfigFile! (
+	set /p BitrateRawValue=
+	set /p DownloadsFolderAssignedName=
+	set /p DirectoryInTitle=
+	set /p CheckForUpdatesOnStartup=
+	set /p SelectedLyricsProvider=
+)
+echo  - %time% Finished Loading Configuration File
+exit /b
+:WriteConfig
+echo  - %time% Started Writing Configuration File
+del !ConfigFile! /f /q
+(
+	echo !BitrateRawValue!
+	echo !DownloadsFolderAssignedName!
+	echo !DirectoryInTitle!
+	echo !CheckForUpdatesOnStartup!
+	echo !SelectedLyricsProvider!
+) > !ConfigFile!
+echo  - %time% Finished Writing Configuration File
+exit /B
+:ResetConfig
+del !ConfigFile! /f /q
+goto FirstRun
+:CheckForUpdatesMenu
+mode con: cols=60 lines=21
+set AvailableServerVersion=no_connection
+cls
+set choice=
+echo.
+echo                    -Checking for Updates-
+echo.
+echo  Please wait a moment...
+call :dvfs
+if AvailableServerVersion==no_connection (exit /b)
+set /p AvailableServerVersion=<!TempDirectory!s.ver
+set /p LastUpdatedServerVersion=<!TempDirectory!lastUpdated.ver
+if !SPOTYdlCurrentVersion! LSS !AvailableServerVersion! (
+	cls
+	echo.
+	echo             - There is a NEW update available -
+	echo.
+	echo.
+    echo  Current version: !SPOTYdlCurrentVersion!
+    echo  Latest version: !AvailableServerVersion!
+	echo   - released on: !LastUpdatedServerVersion!
+    echo.
+    echo  Would you like to update now?
+    echo  ^(y/hit [ENTER] to cancel^)
+    echo.
+    set /p choice=^>^> 
+    if !choice!==y (
+		goto update
 	) else (
-		echo spotdl download %mam_download_command% --format %format% --output %curdir% --bitrate %kbps% --log-level DEBUG
-		spotdl download %mam_download_command% --format %format% --output %curdir% --bitrate %kbps% --log-level DEBUG
-		pause
+		echo  Update cancelled.
+		timeout /t 3 >nul
 	)
 )
-if %errorlevel% == 0 goto clnup
-if %errorlevel% == 1 goto error1
-goto spotDL_trouble
-
-
-:control_panel
-mode con: cols=60 lines=15
-set choice=
-cls
-echo.
-echo                        -CONTROL PANEL-
-echo.
-echo  Welcome back %logged_username%!
-echo.
-echo.
-echo  Available options:
-echo   1) Registered accounts' info
-echo   2) Installation level settings
-echo   3) LogOut
-echo.
-set /p choice=^>^> 
-if %choice%==1 (goto registered_accounts_info)
-if %choice%==2 (goto installation_settings)
-if %choice%==3 (goto login_menu)
+exit /b
+:dvfs
+if exist !TempDirectory!s.ver (del !TempDirectory!s.ver)
+if !UpdateChannel!==Stable (
+	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/s.ver -Outfile !TempDirectory!s.ver">nul
+) else (
+	powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/bs.ver -Outfile !TempDirectory!s.ver">nul
+)
+powershell -command "Invoke-WebRequest https://raw.githubusercontent.com/GabiBrawl/SPOTYdl/main/server/lastUpdated.ver -Outfile !TempDirectory!lastUpdated.ver">nul
+exit /b
+:InvalidInput
+echo  The value you entered is invalid. Try again!
+timeout /t 3 >nul
+exit /b
+:blank_input
 echo  You can't leave this field in blank. Try again!
-timeout /t 4 >nul
-goto control_panel
+timeout /t 3 >nul
+exit /b
+:PressAnyKeyToContinue
+echo  Press any key to go back...
+pause >nul
+exit /b
+:invalid_url
+echo  Invalid URL. Please try again.
+timeout /t 3 >nul
+exit /b
+:invalidYoutubeUrl
+echo   Only YouTube URLs are supported. Try again.
+timeout /t 3 >nul
+exit /b
 
 
-:registered_accounts_info
-set choice=
-cls
-echo.
-echo                                 -Accounts-
-echo.
-set count=0
-for /F "delims=" %%A in ('dir /a:d /b %users%*') do (
-   set /a count+=1
-   set "choice[!count!]=%%A"
-	set /a value+=1
-	set !value!=%%A
-)
-for /f %%b in ('dir %users% ^| find "Folder(s)"') do (set fc=%%b)
-set count=
-for /F "delims=" %%A in ('< %users%%usrn%/psw.id (set /p psw=)') do (
-   set /a count+=1
-   set "choice[!count!]=%%A"
-	set /a value+=1
-	set !value!=%%A
-)
-:: Type each user's name
-for /L %%A in (1,1,!count!) do echo   %%A^) !choice[%%A]!
-set /p choice=^>^> 
-for /L %%A in (1,1,!count!) do (if %usrn%==%%A (set usrn=!choice[%%A]!))
-
-
-:installation_settings
+:: This is the end of the script. If you want to add more features, do it here please.
+:: No Copyrights, no license, no nothing. Just do whatever you want with it. By GabiBrawl, 24th December 2022. (yup, I do code in the most unextpected timings hehe)
