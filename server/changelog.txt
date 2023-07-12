@@ -3,10 +3,10 @@
 Info:
    - Features marked with an asterisk (*) are features that are already implemented.
    - Features marked with a minus sign (-) are features that weren't finished, and are going to be implemented on child versions. The updates that contain that character, are updates that are available only on the BETA channel. When these updates get finished, they will be pushed to the stable channel.
-   - Features marked with a plus sign (+) are features that weren't finished, but may not be implemented.
+   - Features marked with a plus sign (+) are features that weren't finished, and may not be implemented.
    - Features marked with a dollar sign ($) are features that were finished and added to a child version.
    - Bugs/Glitches marked with a cross sign (x) are B/G that don't have a solution yet but may be repaired in the future.
-   - The date besides all the features' versions correspond to the dates of when the update was released to the stable channel.
+   - The date besides all the features' versions correspond to the dates of when the update was released.
 
 
 _______________________________V0.1_______________________________ 25/02/2022
@@ -219,10 +219,10 @@ ________________________________V2.1________________________________ 19/06/2022
          x Making the notifications bugged too.
    * Settings:
       * Settings wouldn't save correctly
-      x The configuration file would get corrupted on its own.
+      $ The configuration file would get corrupted on its own.
          * Not only, but also because of the new process temporary files creation
       * When resetting the Downloads folder name, the configuration file would get some spaces that would corrupt the downloading process.
-      x Some configuration entries would get saved with "ECHO is off." instead of their corresponding values.
+      $ Some configuration entries would get saved with "ECHO is off." instead of their corresponding values.
       * The window size was too small for the info...
    * Startup:
       * The program would fail just when trying to startup.
@@ -272,7 +272,7 @@ ________________________________V2.1________________________________ 19/06/2022
    * Can only be activated within the code. Set the debug variable to true if you wanna enable it.
    * Activates spotDL logs in debug mode.
       * Rn only available at the normal song downloading method.
-      + Logs get saved into "%appdata%\SPOTYdl\logs\"
+      x Logs get saved into "%appdata%\SPOTYdl\logs\"
    * Shows the used downloading commands, and pauses the script for better readability.
       * Don't expect that smooth app experience with debug enabled.
 
@@ -282,7 +282,7 @@ ________________________________V2.2________________________________ 18/09/2022
    * If you delete the Downloads folder while the script is running, you won't get the styled Downloads folder icon. (Fun Fact! This bug actually existed since v1.8!)
    * Repaired a glitch that would cause malfunction with directory paths containing spaces. (Fun Fact! This glitch actually existed since v1.8 too!)
 * Some UI inconsistencies corrected.
-* Removed a no longer used setting within the settings menu.
+* Removed a no longer needed setting within the settings menu.
 * Manual audio matching feature is now available from within the main menu!
    * You match a YouTube video song link with a spotify song for it's metadata!!
 * Various bug patches and optimizations added into the code.
@@ -293,8 +293,8 @@ ________________________________V2.2________________________________ 18/09/2022
    * Added the option to force update spotDL, but only works when online. For offline zip, you may wanna wait till the next release of the self extracting RAR file we've got for you.
 * User Profiles
    * Admin control panel
-      - Can check all registered users
-         - Their corresponding passwords (if any is set)
+      $ Can check all registered users
+         $ Their corresponding passwords (if any is set)
          - Change their configurations
       - Set installation level settings (instead of per user's)
       * it's obligatory to set a password for this account.
@@ -337,3 +337,111 @@ ________________________________V2.4________________________________ 05/11/2022
 * Slight optimizations to the code
 * Users
    * Fixed a bug when the Admin account doesn't exist.
+
+
+________________________________V3________________________________ 12/07/2023
+* Re-coded the whole script. Been stopped for quite some time, and I can't get over reading my old code. The script will be more efficient now.
+- SPOTYdl v3L. The lite version of SPOTYdl. If you don't want to have all the extra features SPOTYdl has, you can opt into the Lite version. It has spotDL v3 support. Pure download only. No setup, no nothing.
+* Deprecated features:
+   * Users
+   * Separated downloads. Not useful, plus takes longer to download songs.
+   * spotDL V3 download support. Run an older version of SPOTYdl to use it.
+* Known bugs:
+   * BSync isn't correctly working
+- Upcoming features:
+   - What's new screen after updating the script.
+   - SPOTYdl V3L channel in the version menu.
+* Improved many captions and text.
+* Got calling to work, which will make the code smaller hehe
+* Fixed a title when starting the script
+* Fixed the organization of the script, and some bugs related to it.
+* Manual audio matching:
+   * Fixed a bug that wouldn't let you go back.
+   * Fixed a dumb code I added, that wouldn't check anymore for invalid string input.
+   * Now the script will check if the input is a valid spotify/youtube link before continuing.
+* Pending downloads:
+   * From this new menu you can chose if you wanna continue pending downloads or abort them.
+* Reset mode:
+   * Reset mode added. If SPOTYdl doesn't START correctly, use the restart command when launching (SPOTYdl.bat reset).
+* Main Menu:
+   * New caption that shows how many songs have been downloaded so far!
+   * Reorganized options.
+      * A more detailed menu was added. Less popular or relevant features are there stored. Community driven!
+   * Corrected a bug that would crash the script, when there are no songs downloaded.
+* Setup:
+   * A fully working setup is finally available in SPOTYdl. Thanks to all beta testers! (me, me, full stack, r/batch, my school's computers, and my VM)
+      * Tools downloading:
+         * Corrected a bug when downloading the needed tools: it was downloading the github pages instead of the tools themselves..... forgot to set a raw page lol...
+         * After finishing the download, it won't no longer ask for a key press.
+      * General installations:
+         * The script will now verify the downloaded files in order to not having the risk of installing corrupted files into your system.
+      * Python installation:
+         * Changed the downloaded python setup to a non amd64 one, which will add more compatibility to more systems.
+      * spotDL installation:
+         * fixed a bug that if a config file doesn't exist, it would create a corrupted config file, rendering the script unusable.
+         * added a force install option. In case spotDL doesn't work, use this option.
+         * tweaked the process a bit too.
+      * ffmpeg installation:
+         * fixed the download from GitHub command.
+      * Added the forgotten help file for the setup menu.
+      * Locked the setup for 64-bit machines only.
+* Song Downloader:
+   * Officially implemented a commit by homebrewGT. Thanks for the help, and feedback! :D (now when you download a song, it wont go back to the main menu, instead it will ask for another song name input!)
+   * Added a quote to inform about the removal of any special characters in the input.
+* Version upgrade:
+   * Removed the window spam when updating SPOTYdl. The whole process is now hidden. (Not meaning that you could see anything before lol)
+* Settings:
+   * Renamed settings names. Easier to understand now ;)
+   * Downloads folder name:
+      * It's now possible to set the downloading directory to an existing folder, directly from the app.
+      * To protect the script, you can't set a blank space before or after your string (in other words, the new folder name).
+      * The script now reminds you if you're setting the same name as before.
+      * Locked the script to not accept names with spaces. Ngl, got so much to do, not gonna waste more time fixing hundreds of lines of codes in order to getting it running... I'm sorry, just use hyphens ;)
+   * Lyrics provider:
+      * Chose your lyrics provider from the new toggle.
+      * Lyrics are now available in every downloading section.
+   * Check for updates setting finally added.
+   * Corrected a bug when trying to set the Downloads folder into an existing folder.
+   * Moved the settings into the Admin account. The majority of the settings are related to all the users.
+   * Default Bitrate Function:
+      * Removed the extra menu for bitrate choices.
+      * New option gives more info about it instantaneously.
+   * Removed the history file toggle.
+* BSync:
+   * The feature will now block unwanted input.
+* Help files:
+   * Updated the help file from the main menu. All info you could need is there.
+   * New help file for the settings menu. Every single option explained, no newbie will pass through, not understanding a single option!
+* Changelog:
+   * Corrected a bug that wouldn't delete any old changelog files available.
+* Song listing:
+   * Corrected an error that rendered the song listing feature to be unusable.
+   * Corrected a bug that would crash the script when using this feature.
+   * Now the "Downloads" folder caption is changed to whatever name your downloads folder has.
+   * Corrected a bug related to paths with spaces.
+* By Me:
+   * New menu that contains recent projects done by me and socials.
+* Inside guides
+   * Added some comments on the code to guide anyone who could want to add some feature. You're welcome!
+* Temporary and Data folders:
+   * Changed the appdata folders to include .\GabiBrawl\. in the directory. All my scripts will save data into their own folder within my own folder.
+* First initialization remake, and refining.
+   * Removed the initialization history and bitrate setting options.
+   * Added a quick start guide, so getting to settings & etc will be easier to newer users.
+   * Didn't work much in the UI over there, as people only go there once ;) In a distant future update imma fix that. Promised!
+* Removed a no longer needed configuration file checker. Was introduced in mid 2022 for the introduction of Settings, but I believe everyone has already updated beyond those versions. This change will make startup faster.
+* Check for updates:
+   * For you to be aware of any future updates I may be releasing, I finally added this feature. It was scheduled since so long haha
+* History:
+   * Created a folder in the data folder of the program, which will store all history files in there. No more annoying files in front of the user!
+   * History entries will now be saved only upon successfully downloaded the song.
+* Login menu:
+   * Corrected some design inconsistencies.
+* YouTube only downloader:
+   * Wanna download a song which ain't available on Spotify, but instead available on YouTube? SPOTYdl got your back. Option i, will permit you to insert a youtube url to download the video into an mp3. Just bear in mind that no metadata will be included.
+   * youtube-dl doesn't work anymore, so in the new recode I moved to yt-dlp, the new youtube-dl fork.
+* txt file importer:
+   * Fixed a few bugs with the downloads folder name personalization.
+   * Fixed a bug in which all downloads would show up as failed.
+* reset command:
+   * fully functional. After fixing some bugs and making it consistent with the rest of the "UI".
