@@ -1,3 +1,5 @@
+# !!PYTHON VERSION IN DEVELOPMENT!!
+
 <a href="https://github.com/GabiBrawl/SPOTYdl/releases/tag/SPOTYdl_v2.0" target="_blank" draggable="false"/>
   <img width="100" height="100" border="0" align="center"  src="https://user-images.githubusercontent.com/85069997/163675739-355dc669-721e-4d55-9f31-1fc56d59cff5.png"/>
 </a>
